@@ -1,0 +1,18 @@
+{
+  "profiles": {
+    "CorePunkServerSamples": {
+      "commandName": "Project"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker"
+    }
+  }
+  "ServerConfig": {
+      "IpAddress": "127.0.0.1",
+      "Port": 8080
+    },
+    "Logging": {
+      "LogLevel": "Info"
+    }
+
+}
