@@ -4,21 +4,19 @@ namespace ServerApp
 {
     public class ServerAppInitializer
     {
-        private readonly string _serverIp;
-        private readonly int _serverPort;
+        private readonly Configuration _config;
         private readonly AppLock _appLock;
 
-        public ServerAppInitializer(string serverIp, int serverPort, AppLock appLock)
+        public ServerAppInitializer(Configuration config, AppLock appLock)
         {
-            _serverIp = serverIp;
-            _serverPort = serverPort;
+            _config = config;  // Use Configuration to hold all the parameters
             _appLock = appLock;
         }
 
         public bool InitializeServer()
         {
             // Using ClientLock to check if the server is already running
-            if (_appLock.IsInstanceRunning("server", _serverIp, _serverPort, "server"))
+            if (_appLock.IsInstanceRunning(_config))
             {
                 Console.WriteLine("The server is already running on this IP/Port.");
                 return false;

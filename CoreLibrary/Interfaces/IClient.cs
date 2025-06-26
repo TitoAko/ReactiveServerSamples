@@ -1,6 +1,6 @@
 ﻿using CoreLibrary.Messaging;
 
-namespace ClientApp
+namespace CoreLibrary.Interfaces
 {
     public interface IClient
     {
@@ -13,7 +13,7 @@ namespace ClientApp
         /// Receive message from the server
         /// </summary>
         /// <returns>A message received from the server</returns>
-        Message ReceiveMessage();
+        Message ReceiveMessage(Message message);
         void Connect();  // Establish a connection (e.g., connect to the server)
         void Disconnect();  // Disconnect from the server
 

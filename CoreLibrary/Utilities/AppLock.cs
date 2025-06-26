@@ -2,13 +2,13 @@
 {
     public class AppLock
     {
-        private Mutex _mutex;
+        private Mutex? _mutex;
 
         // Check if the client/server is already running for the given user/IP/port combination
-        public bool IsInstanceRunning(string username, string ipAddress, int port, string appType = "client")
+        public bool IsInstanceRunning(Configuration config)
         {
             // Generate a unique mutex name based on user/IP/port and app type (client or server)
-            string mutexName = $"AppLock_{username}_{ipAddress}_{port}_{appType}";
+            string mutexName = $"AppLock_{config.Username}_{config.IpAddress}_{config.Port}_{config.AppType}";
 
             // Attempt to create or open a mutex with the unique name
             _mutex = new Mutex(true, mutexName, out bool createdNew);

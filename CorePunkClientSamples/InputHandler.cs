@@ -1,4 +1,5 @@
-﻿using CoreLibrary.Messaging;
+﻿using CoreLibrary.Interfaces;
+using CoreLibrary.Messaging;
 using CoreLibrary.Messaging.MessageTypes;
 
 namespace ClientApp

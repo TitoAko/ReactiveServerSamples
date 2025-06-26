@@ -31,7 +31,7 @@ namespace ClientApp
             // For example, use a communicator to send the message
         }
 
-        public Message ReceiveMessage()
+        public Message ReceiveMessage(Message message)
         {
             // Logic to receive a message
             // For example, listen to incoming messages

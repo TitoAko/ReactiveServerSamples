@@ -1,73 +1,65 @@
-﻿using ClientApp;
-using CoreLibrary.Handlers;
+﻿using CoreLibrary.Handlers;
 using CoreLibrary.Interfaces;
 using CoreLibrary.Utilities;
 using ServerApp;
 
-namespace CorePunkClientSamples
+namespace ClientApp
 {
     public class ClientAppInitializer
     {
-        private readonly string _username;
-        private readonly string _password;
         private readonly Configuration _config;
-        private readonly LoggingService _loggingService; // using the centralized LoggingService
-        private readonly IMessageProcessor _messageProcessor;
+        private readonly LoggingService _loggingService;
         private readonly OutputHandler _outputHandler;
         private readonly InputHandler _inputHandler;
+        private readonly ICommunicator _communicator;
         private readonly ClientHandler _clientHandler;
-        private readonly ICommunicator _communicator; //communicator to allow flexibility for Udp/Tcp or any other communication
-        private readonly AppLock _appLock; // Inject ClientLock to manage client instances
+        private readonly AppLock _appLock;
 
-        public ClientAppInitializer(string username, string password, LoggingService loggingService, ICommunicator communicator, ClientHandler clientHandler, AppLock appLock)
+        public ClientAppInitializer(Configuration config, LoggingService loggingService, ICommunicator communicator, AppLock appLock, ClientHandler clientHandler)
         {
-            _username = username;
-            _password = password;
-            _config = new Configuration("launchSettings.json");
+            _config = config;  // Use AppConfiguration to hold all the parameters
             _loggingService = loggingService;
-            _clientHandler = clientHandler;
             _appLock = appLock;
             _outputHandler = new OutputHandler();
-            _inputHandler = new InputHandler(new ChatClient(_clientHandler, _outputHandler, _config));
-            _communicator = communicator; // store the communicator (UDP/TCP) for sending/receiving messages
+            _communicator = communicator;
+            _clientHandler = clientHandler;
+            _inputHandler = new InputHandler(new ChatClient(_clientHandler, _outputHandler, new Configuration("launchSettings.json")));
         }
 
-        // Authenticate the user and initialize the client
         public bool InitializeClient()
         {
-            // Authenticate the user
             if (!AuthenticateUser())
             {
                 _loggingService.Log("Authentication failed!");
                 return false;
             }
 
-            // Check if client is already running for the given user/IP/port
-            if (_appLock.IsInstanceRunning(_username, _config.ServerIpAddress, _config.ServerPort))
+            // Use AppLock to check if the client is already running
+            if (_appLock.IsInstanceRunning(_config))
             {
                 _loggingService.Log("Another instance of the client is already running for this user on the given IP/Port.");
                 return false;
             }
 
-            // initialize the client
-            var chatClient = new ChatClient(_clientHandler, _outputHandler, _config);
-            chatClient.Connect();
-            chatClient.StartListening();
+            // Initialize the MessageProcessor with LoggingService and IBroadcastMessage (ChatServer)
+            var messageProcessor = MessageProcessorFactory.CreateProcessor(_loggingService, new ChatClient(_clientHandler, _outputHandler, _config));
 
-            // Client initialized successfully
+            // Create and start the client
+            var chatClient = new ChatClient(_clientHandler, _outputHandler, new Configuration("launchSettings.json"));
+            chatClient.Connect();
+            chatClient.StartListening();  // Start listening for messages
+
             return true;
         }
 
-        // Authenticate the user using username and password
         private bool AuthenticateUser()
         {
-            return UserAuthenticator.Authenticate(_username, _password);
+            return UserAuthenticator.Authenticate(_config.Username, _config.Password);
         }
 
-        // Release the lock after the client finishes
         public void ReleaseLock()
         {
-            ClientLock.ReleaseLock();
+            _appLock.ReleaseLock();  // Release the lock after the client finishes
         }
     }
 }

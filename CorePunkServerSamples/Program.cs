@@ -3,7 +3,7 @@ using System.Net.Sockets;
 using System.Reactive.Linq;
 using System.Text;
 
-namespace CorePunkServerSamples
+namespace ServerApp
 {
     internal class Program
     {
