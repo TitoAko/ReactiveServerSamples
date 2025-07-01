@@ -11,7 +11,8 @@
     "IpAddress": "127.0.0.1",
     "Port": 8080,
     "username": "admin",
-    "password": "admin123"
+    "password": "admin123",
+    "communicator": "UdpCommunicator"
   },
   "Logging": {
     "LogLevel": "Info"

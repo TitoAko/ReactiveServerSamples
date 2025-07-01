@@ -1,10 +1,5 @@
 ﻿using CoreLibrary.Interfaces;
 using CoreLibrary.Utilities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CoreLibrary.Handlers
 {
@@ -24,16 +19,16 @@ namespace CoreLibrary.Handlers
         /// <param name="broadcastMessage">An optional broadcast message instance used for server-side operations. Ignored if <paramref name="client"/>
         /// is not <see langword="null"/>.</param>
         /// <returns>A new instance of <see cref="IMessageProcessor"/> configured for the specified mode of operation.</returns>
-        public static IMessageProcessor CreateProcessor(LoggingService loggingService, IClient? client = null, IBroadcastMessage? broadcastMessage = null)
+        public static IMessageProcessor CreateProcessor(LoggingService loggingService, ICommunicator communicator, IClient? client = null, IBroadcastMessage? broadcastMessage = null)
         {
             // Ensure only one of client or broadcastMessage is provided (not both)
             if (client == null && broadcastMessage != null)
             {
-                return new MessageProcessor(loggingService, broadcastMessage);
+                return new MessageProcessor(loggingService, broadcastMessage, communicator);
             }
             else if (client != null && broadcastMessage == null)
             {
-                return new MessageProcessor(loggingService, client!);
+                return new MessageProcessor(loggingService, client!, communicator);
             }
             else
             {

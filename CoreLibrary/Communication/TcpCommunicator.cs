@@ -61,5 +61,15 @@ namespace CoreLibrary.Communication
             IMessageType messageType = new TextMessage();  // We assume it's a text message for this example
             return new Message("Client", messageContent, messageType);
         }
+
+        public void StopListening()
+        {
+            _tcpListener.Stop();  // Stop listening for incoming messages
+        }
+
+        public void Dispose()
+        {
+            _tcpListener.Dispose();
+        }
     }
 }

@@ -53,4 +53,17 @@ public class UdpCommunicator : ICommunicator
         IMessageType messageType = new TextMessage();  // Assume it's a text message
         return new Message("Client", messageContent, messageType);
     }
+
+    /// <summary>
+    /// Close the UDP client and stop listening for messages.
+    /// </summary>
+    public void StopListening()
+    {
+        _udpClient.Close();
+    }
+
+    public void Dispose()
+    {
+        _udpClient.Dispose();
+    }
 }

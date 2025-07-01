@@ -1,29 +1,53 @@
 ﻿using CoreLibrary.Handlers;
 using CoreLibrary.Interfaces;
 using CoreLibrary.Utilities;
-using ServerApp;
 
 namespace ClientApp
 {
-    public class ClientAppInitializer
+    public class ClientAppInitializer : IDisposable
     {
         private readonly Configuration _config;
         private readonly LoggingService _loggingService;
         private readonly OutputHandler _outputHandler;
-        private readonly InputHandler _inputHandler;
+        //private readonly InputHandler _inputHandler;
         private readonly ICommunicator _communicator;
         private readonly ClientHandler _clientHandler;
         private readonly AppLock _appLock;
 
-        public ClientAppInitializer(Configuration config, LoggingService loggingService, ICommunicator communicator, AppLock appLock, ClientHandler clientHandler)
+        public ClientAppInitializer()
         {
-            _config = config;  // Use AppConfiguration to hold all the parameters
-            _loggingService = loggingService;
-            _appLock = appLock;
+            _config = new Configuration("launchSettings.json");  // Use AppConfiguration to hold all the parameters
+            _loggingService = new LoggingService();
+            _appLock = new AppLock();
             _outputHandler = new OutputHandler();
-            _communicator = communicator;
-            _clientHandler = clientHandler;
-            _inputHandler = new InputHandler(new ChatClient(_clientHandler, _outputHandler, new Configuration("launchSettings.json")));
+            _communicator = CreateCommunicatorFromConfig(_config.Communicator);
+            _clientHandler = new ClientHandler();
+            //_inputHandler = new InputHandler(new ChatClient(_clientHandler, _outputHandler, new Configuration("launchSettings.json")));
+        }
+
+        private ICommunicator CreateCommunicatorFromConfig(string communicatorType)
+        {
+            Type? communicatorClass = Type.GetType($"CoreLibrary.Communication.{communicatorType}");
+            if (communicatorClass == null)
+            {
+                throw new ArgumentException($"Invalid communicator type: {communicatorType}");
+            }
+            ICommunicator? communicator;
+            try
+            {
+                communicator = (ICommunicator?)Activator.CreateInstance(communicatorClass, _config.IpAddress, _config.Port);
+
+                // Create an instance of the communicator class
+                if (communicator == null)
+                {
+                    throw new InvalidOperationException($"Failed to create instance of communicator type: {communicatorType}");
+                }
+                return communicator;
+            }
+            catch
+            {
+                throw new InvalidOperationException($"Failed to create instance of communicator type: {communicatorType}");
+            }
         }
 
         public bool InitializeClient()
@@ -41,13 +65,7 @@ namespace ClientApp
                 return false;
             }
 
-            // Initialize the MessageProcessor with LoggingService and IBroadcastMessage (ChatServer)
-            var messageProcessor = MessageProcessorFactory.CreateProcessor(_loggingService, new ChatClient(_clientHandler, _outputHandler, _config));
-
-            // Create and start the client
-            var chatClient = new ChatClient(_clientHandler, _outputHandler, new Configuration("launchSettings.json"));
-            chatClient.Connect();
-            chatClient.StartListening();  // Start listening for messages
+            _loggingService.Log("Client initialized successfully.");
 
             return true;
         }
@@ -60,6 +78,16 @@ namespace ClientApp
         public void ReleaseLock()
         {
             _appLock.ReleaseLock();  // Release the lock after the client finishes
+        }
+
+        public void Dispose()
+        {
+            _appLock?.ReleaseLock();
+            _communicator?.Dispose();
+            _clientHandler?.Disconnect();
+            _outputHandler?.DisposeResources();  // Dispose of the OutputHandler if it implements IDisposable
+            _outputHandler?.Dispose();
+            // _inputHandler?.Dispose(); // Uncomment if InputHandler is used
         }
     }
 }

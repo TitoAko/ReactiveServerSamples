@@ -1,18 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace ClientApp
+﻿namespace ClientApp
 {
     /// <summary>
     /// Displays incoming messages from the server to the client,
     /// ensures messages are displayed in a user friendly format,
     /// and optionally, handle things like formatting or timestamping messages, depending on how the output is structured.
     /// </summary>
-    public class OutputHandler
+    public class OutputHandler : IDisposable
     {
+        public void Dispose()
+        {
+            this.Dispose();
+        }
+        /// <summary>
+        /// Dispose method to clean up resources if necessary
+        /// </summary>
+        public void DisposeResources()
+        {
+            this.DisposeResources();
+        }
         /// <summary>
         /// Display message (messageContent) received from the sender (who sent the message)
         /// </summary>

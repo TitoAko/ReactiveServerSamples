@@ -1,10 +1,5 @@
 ﻿using CoreLibrary.Interfaces;
 using CoreLibrary.Messaging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ServerApp
 {
@@ -31,7 +26,7 @@ namespace ServerApp
             // Send a message to all connected clients
             foreach (var client in _userManager.GetAllClients())
             {
-                client.SendMessage(message);
+                client.SendMessage(message, _communicator);
             }
         }
 

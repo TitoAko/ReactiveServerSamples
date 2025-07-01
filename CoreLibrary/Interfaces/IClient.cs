@@ -8,12 +8,12 @@ namespace CoreLibrary.Interfaces
         /// send message to the server
         /// </summary>
         /// <param name="message">Message to send to the server</param>
-        void SendMessage(Message message);
+        void SendMessage(Message message, ICommunicator communicator);
         /// <summary>
         /// Receive message from the server
         /// </summary>
         /// <returns>A message received from the server</returns>
-        Message ReceiveMessage(Message message);
+        Message ReceiveMessage(ICommunicator communicator);
         void Connect();  // Establish a connection (e.g., connect to the server)
         void Disconnect();  // Disconnect from the server
 

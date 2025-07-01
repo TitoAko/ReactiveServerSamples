@@ -1,7 +1,6 @@
 ﻿using CoreLibrary.Handlers;
 using CoreLibrary.Interfaces;
 using CoreLibrary.Messaging;
-using CoreLibrary.Messaging.MessageTypes;
 using CoreLibrary.Utilities;
 
 namespace ClientApp
@@ -25,17 +24,16 @@ namespace ClientApp
         }
 
         // Implement IClient methods
-        public void SendMessage(Message message)
+        public void SendMessage(Message message, ICommunicator communicator)
         {
             // Logic to send message
-            // For example, use a communicator to send the message
+            communicator.SendMessage(message);
         }
 
-        public Message ReceiveMessage(Message message)
+        public Message ReceiveMessage(ICommunicator communicator)
         {
             // Logic to receive a message
-            // For example, listen to incoming messages
-            return new Message("Server", "Sample message", new TextMessage());
+            return communicator.ReceiveMessage();
         }
 
         public void DisplayReceivedMessage(Message message)

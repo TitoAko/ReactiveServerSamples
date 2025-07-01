@@ -157,5 +157,18 @@ namespace CoreLibrary.Utilities
                 return value;
             }
         }
+
+        public string Communicator
+        {
+            get
+            {
+                var value = _configuration.GetSection("ClientConfig")["communicator"];
+                if (string.IsNullOrWhiteSpace(value))
+                {
+                    throw new InvalidOperationException("ClientConfig:communicator is missing or empty in configuration.");
+                }
+                return value;
+            }
+        }
     }
 }

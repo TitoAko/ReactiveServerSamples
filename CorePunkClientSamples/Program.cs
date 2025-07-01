@@ -1,7 +1,4 @@
-﻿using CoreLibrary.Handlers;
-using CoreLibrary.Interfaces;
-using CoreLibrary.Utilities;
-//using ServerApp;
+﻿//using ServerApp;
 
 namespace ClientApp
 {
@@ -9,37 +6,12 @@ namespace ClientApp
     {
         public static void Main(string[] args)
         {
-            Configuration configuration = new Configuration("config.json");
-
-            // Initialize LoggingService
-            LoggingService loggingService = new LoggingService();
-
-            // Initialize AppLock
-            AppLock appLock = new AppLock();
-
-            ClientHandler clientHandler = new ClientHandler();
-
-            OutputHandler outputHandler = new OutputHandler();
-
-            // Choose communicator (Udp or Tcp)
-            ICommunicator communicator = new UdpCommunicator(configuration.IpAddress, configuration.Port, MessageProcessorFactory.CreateProcessor(loggingService, new ChatClient(clientHandler, outputHandler, configuration)));
-
-            // Initialize ClientAppInitializer
-            ClientAppInitializer initializer = new ClientAppInitializer(configuration, loggingService, communicator, appLock, clientHandler);
-
-            // Initialize the client
-            if (initializer.InitializeClient())
+            // Initialize ClientAppInitializer and rely on its constructor for initialization
+            using (var initializer = new ClientAppInitializer())
             {
-                loggingService.Log("Client initialized successfully.");
+                // InitializeClient is now called inside the constructor of ClientAppInitializer
+                Console.WriteLine("Client initialized successfully.");
             }
-            else
-            {
-                loggingService.Log("Client initialization failed.");
-                return;
-            }
-
-            // Release lock after finishing
-            initializer.ReleaseLock();
         }
     }
 }
