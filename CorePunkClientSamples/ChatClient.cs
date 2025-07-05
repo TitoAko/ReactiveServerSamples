@@ -10,12 +10,14 @@ namespace ClientApp
         private readonly ClientHandler _clientHandler;  // Reference to ClientHandler
         private readonly OutputHandler _outputHandler;
         private readonly Configuration _config;
+        private readonly ICommunicator _communicator;
 
-        public ChatClient(ClientHandler clientHandler, OutputHandler outputHandler, Configuration config)
+        public ChatClient(ClientHandler clientHandler, OutputHandler outputHandler, Configuration config, ICommunicator communicator)
         {
             _clientHandler = clientHandler;
             _outputHandler = outputHandler;
             _config = config;
+            _communicator = communicator;
 
             // Subscribe to events raised by ClientHandler
             _clientHandler.OnMessageReceived += DisplayReceivedMessage;
@@ -24,16 +26,16 @@ namespace ClientApp
         }
 
         // Implement IClient methods
-        public void SendMessage(Message message, ICommunicator communicator)
+        public void SendMessage(Message message)
         {
             // Logic to send message
-            communicator.SendMessage(message);
+            _communicator.SendMessage(message);
         }
 
-        public Message ReceiveMessage(ICommunicator communicator)
+        public Message ReceiveMessage()
         {
             // Logic to receive a message
-            return communicator.ReceiveMessage();
+            return _communicator.ReceiveMessage();
         }
 
         public void DisplayReceivedMessage(Message message)

@@ -3,9 +3,9 @@ namespace CoreLibrary.Utilities
 {
     public class UserAuthenticator
     {
-        public static bool Authenticate(object username, object password)
+        public static bool Authenticate(string username, string password)
         {
-            throw new NotImplementedException();
+            return true;
         }
     }
 }

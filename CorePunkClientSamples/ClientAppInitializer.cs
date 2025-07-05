@@ -9,10 +9,11 @@ namespace ClientApp
         private readonly Configuration _config;
         private readonly LoggingService _loggingService;
         private readonly OutputHandler _outputHandler;
-        //private readonly InputHandler _inputHandler;
-        private readonly ICommunicator _communicator;
         private readonly ClientHandler _clientHandler;
         private readonly AppLock _appLock;
+        private readonly IClient _chatClient;
+        private readonly ICommunicator _communicator;
+        private readonly IMessageProcessor _messageProcessor;
 
         public ClientAppInitializer()
         {
@@ -20,14 +21,25 @@ namespace ClientApp
             _loggingService = new LoggingService();
             _appLock = new AppLock();
             _outputHandler = new OutputHandler();
-            _communicator = CreateCommunicatorFromConfig(_config.Communicator);
             _clientHandler = new ClientHandler();
-            //_inputHandler = new InputHandler(new ChatClient(_clientHandler, _outputHandler, new Configuration("launchSettings.json")));
+
+            _communicator = CreateCommunicatorFromConfig(_config.Communicator);
+
+            _chatClient = new ChatClient(_clientHandler, _outputHandler, _config, _communicator);
+
+            _messageProcessor = new MessageProcessor(_loggingService, _chatClient);
+            InitializeClient();
         }
 
         private ICommunicator CreateCommunicatorFromConfig(string communicatorType)
         {
-            Type? communicatorClass = Type.GetType($"CoreLibrary.Communication.{communicatorType}");
+            Type? communicatorClass = AppDomain.CurrentDomain
+                .GetAssemblies()
+                .SelectMany(assembly => assembly.GetTypes())
+                .FirstOrDefault(type => type.IsClass
+                && typeof(ICommunicator).IsAssignableFrom(type)
+                && type.Name.Equals(communicatorType, StringComparison.OrdinalIgnoreCase)
+                && type.Namespace == "CoreLibrary.Communication");
             if (communicatorClass == null)
             {
                 throw new ArgumentException($"Invalid communicator type: {communicatorType}");
@@ -35,7 +47,7 @@ namespace ClientApp
             ICommunicator? communicator;
             try
             {
-                communicator = (ICommunicator?)Activator.CreateInstance(communicatorClass, _config.IpAddress, _config.Port);
+                communicator = (ICommunicator?)Activator.CreateInstance(communicatorClass, _config.IpAddress, _config.Port, _messageProcessor);
 
                 // Create an instance of the communicator class
                 if (communicator == null)
@@ -82,12 +94,11 @@ namespace ClientApp
 
         public void Dispose()
         {
-            _appLock?.ReleaseLock();
+            ReleaseLock();
             _communicator?.Dispose();
             _clientHandler?.Disconnect();
             _outputHandler?.DisposeResources();  // Dispose of the OutputHandler if it implements IDisposable
             _outputHandler?.Dispose();
-            // _inputHandler?.Dispose(); // Uncomment if InputHandler is used
         }
     }
 }

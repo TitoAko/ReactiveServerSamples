@@ -5,7 +5,6 @@ namespace CoreLibrary.Utilities
     public class Configuration
     {
         private readonly IConfiguration _configuration;
-        private string? _appType;
 
         public Configuration(string filePath)
         {
@@ -13,8 +12,13 @@ namespace CoreLibrary.Utilities
             {
                 _configuration = new ConfigurationBuilder()
                     .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
-                    .AddJsonFile(filePath, optional: false, reloadOnChange: true)
+                    .AddJsonFile(filePath, optional: true, reloadOnChange: true)
+                    .AddEnvironmentVariables() // Add this to support Docker/env vars
                     .Build();
+                foreach (System.Collections.DictionaryEntry de in Environment.GetEnvironmentVariables())
+                {
+                    Console.WriteLine($"{de.Key} = {de.Value}");
+                }
             }
             catch (Exception ex)
             {
@@ -24,19 +28,19 @@ namespace CoreLibrary.Utilities
             // Validate required settings
             if (string.IsNullOrWhiteSpace(IpAddress))
             {
-                throw new InvalidOperationException("ServerConfig:IpAddress is missing or empty in configuration.");
+                throw new InvalidOperationException("AppConfig:IpAddress is missing or empty in configuration.");
             }
             if (Port == 0)
             {
-                throw new InvalidOperationException("ServerConfig:Port is missing or invalid in configuration.");
+                throw new InvalidOperationException("AppConfig:Port is missing or invalid in configuration.");
             }
             if (string.IsNullOrWhiteSpace(Username))
             {
-                throw new InvalidOperationException("ServerConfig:Username is missing or empty in configuration.");
+                throw new InvalidOperationException("AppConfig:Username is missing or empty in configuration.");
             }
             if (string.IsNullOrWhiteSpace(Password))
             {
-                throw new InvalidOperationException("ServerConfig:Password is missing or empty in configuration.");
+                throw new InvalidOperationException("AppConfig:Password is missing or empty in configuration.");
             }
             if (string.IsNullOrWhiteSpace(LogLevel))
             {
@@ -44,11 +48,51 @@ namespace CoreLibrary.Utilities
             }
         }
 
-        // Get the application type (server or client)
-        public string? AppType
+        public string AppType =>
+            Environment.GetEnvironmentVariable("APP_TYPE") ??
+            _configuration.GetSection("AppConfig")["AppType"] ??
+            "server";
+
+        public string IpAddress =>
+            Environment.GetEnvironmentVariable("APP_IPADDRESS") ??
+            _configuration.GetSection("AppConfig")["IpAddress"] ??
+            "127.0.0.1";
+
+        public int Port
         {
-            get => _appType;
+            get
+            {
+                var envPort = Environment.GetEnvironmentVariable("APP_PORT");
+                if (!string.IsNullOrWhiteSpace(envPort) && int.TryParse(envPort, out int port) && port > 0)
+                    return port;
+
+                var value = _configuration.GetSection("AppConfig")["Port"];
+                if (int.TryParse(value, out port) && port > 0)
+                    return port;
+
+                throw new InvalidOperationException("AppConfig:Port is missing or invalid in configuration.");
+            }
         }
+
+        public string Username =>
+            Environment.GetEnvironmentVariable("APP_USERNAME") ??
+            _configuration.GetSection("AppConfig")["Username"] ??
+            throw new InvalidOperationException("AppConfig:Username is missing or empty in configuration.");
+
+        public string Password =>
+            Environment.GetEnvironmentVariable("APP_PASSWORD") ??
+            _configuration.GetSection("AppConfig")["Password"] ??
+            throw new InvalidOperationException("AppConfig:Password is missing or empty in configuration.");
+
+        public string Communicator =>
+            Environment.GetEnvironmentVariable("APP_COMMUNICATOR") ??
+            _configuration.GetSection("AppConfig")["Communicator"] ??
+            throw new InvalidOperationException("AppConfig:Communicator is missing or empty in configuration.");
+
+        public string LogLevel =>
+            Environment.GetEnvironmentVariable("APP_LOGLEVEL") ??
+            _configuration.GetSection("Logging")["LogLevel"] ??
+            "Info";
 
         // Get a configuration value as a string
         public string? GetConfigurationValueString(string section, string key)
@@ -65,110 +109,6 @@ namespace CoreLibrary.Utilities
                 throw new InvalidOperationException($"Configuration value for '{section}:{key}' is missing, empty, or invalid (must be a non-negative integer).");
             }
             return configValue;
-        }
-
-        // Server configuration properties (read-only)
-        public string IpAddress
-        {
-            get
-            {
-                _appType = "server"; // Set the app type to server
-                var value = _configuration.GetSection("ServerConfig")["IpAddress"];
-                if (string.IsNullOrWhiteSpace(value))
-                {
-                    _appType = "client"; // Fallback to client if server IP is not set
-                    // Fallback to ClientConfig if ServerConfig is not set
-                    value = _configuration.GetSection("ClientConfig")["IpAddress"];
-                    if (string.IsNullOrWhiteSpace(value))
-                    {
-                        throw new InvalidOperationException("ServerConfig:IpAddress is missing or empty in configuration.");
-                    }
-                }
-                return value;
-            }
-        }
-
-        public int Port
-        {
-            get
-            {
-                _appType = "server"; // Set the app type to server
-                var value = _configuration.GetSection("ServerConfig")["Port"];
-                if (!int.TryParse(value, out int port) || port <= 0)
-                {
-                    _appType = "client"; // Fallback to client if server port is not set
-                    value = _configuration.GetSection("ClientConfig")["Port"];
-                    if (!int.TryParse(value, out port) || port <= 0)
-                    {
-                        throw new InvalidOperationException("ServerConfig:Port is missing or invalid in configuration.");
-                    }
-                }
-                return port;
-            }
-        }
-
-        public string Username
-        {
-            get
-            {
-                _appType = "server"; // Set the app type to server
-                var value = _configuration.GetSection("ServerConfig")["Username"];
-                if (string.IsNullOrWhiteSpace(value))
-                {
-                    _appType = "client"; // Fallback to client if server username is not set
-                    // Fallback to ClientConfig if ServerConfig is not set
-                    value = _configuration.GetSection("ClientConfig")["Username"];
-                    throw new InvalidOperationException("ServerConfig:Username is missing or empty in configuration.");
-                }
-                return value;
-            }
-        }
-
-        public string Password
-        {
-            get
-            {
-                _appType = "server"; // Set the app type to server
-                var value = _configuration.GetSection("ServerConfig")["Password"];
-                if (string.IsNullOrWhiteSpace(value))
-                {
-                    _appType = "client"; // Fallback to client if server password is not set
-                    // Fallback to ClientConfig if ServerConfig is not set
-                    value = _configuration.GetSection("ClientConfig")["Password"];
-                    if (string.IsNullOrWhiteSpace(value))
-                    {
-                        throw new InvalidOperationException("ServerConfig:Password is missing or empty in configuration.");
-                    }
-                }
-                return value;
-            }
-        }
-
-        // Logging configuration property (read-only)
-        public string LogLevel
-        {
-            get
-            {
-                var value = _configuration.GetSection("Logging")["LogLevel"];
-                if (string.IsNullOrWhiteSpace(value))
-                {
-                    throw new InvalidOperationException("Logging:LogLevel is missing or empty in configuration.");
-                }
-                return value;
-            }
-        }
-
-        public string Communicator
-        {
-            get
-            {
-                var value = _configuration.GetSection("ClientConfig")["communicator"];
-                if (string.IsNullOrWhiteSpace(value))
-                {
-                    throw new InvalidOperationException("ClientConfig:communicator is missing or empty in configuration.");
-                }
-                return value;
-            }
         }
     }
 }

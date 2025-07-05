@@ -24,11 +24,11 @@ namespace CoreLibrary.Handlers
             // Ensure only one of client or broadcastMessage is provided (not both)
             if (client == null && broadcastMessage != null)
             {
-                return new MessageProcessor(loggingService, broadcastMessage, communicator);
+                return new MessageProcessor(loggingService, broadcastMessage);
             }
             else if (client != null && broadcastMessage == null)
             {
-                return new MessageProcessor(loggingService, client!, communicator);
+                return new MessageProcessor(loggingService, client!);
             }
             else
             {

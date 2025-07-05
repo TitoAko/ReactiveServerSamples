@@ -11,17 +11,15 @@ namespace CoreLibrary.Communication
         private readonly TcpListener _tcpListener;
         private readonly int _port;
         private readonly string _ipAddress;
-        private readonly IMessageProcessor _messageProcessor;
 
-        public TcpCommunicator(string ipAddress, int port, IMessageProcessor messageProcessor)
+        public TcpCommunicator(string ipAddress, int port)
         {
             _ipAddress = ipAddress;
             _port = port;
             _tcpListener = new TcpListener(IPAddress.Parse(_ipAddress), _port);
-            _messageProcessor = messageProcessor;
         }
 
-        public void StartListening()
+        public void StartListening(IMessageProcessor messageProcessor)
         {
             _tcpListener.Start();
             Console.WriteLine("TCP server is listening...");
@@ -33,7 +31,7 @@ namespace CoreLibrary.Communication
                 if (message != null)
                 {
                     // Process the received message
-                    _messageProcessor.ProcessMessage(message);
+                    messageProcessor.ProcessMessage(message);
                 }
             }
         }

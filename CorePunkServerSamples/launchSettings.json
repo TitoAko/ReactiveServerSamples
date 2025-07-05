@@ -1,14 +1,11 @@
 {
   "profiles": {
-    "CorePunkClientSamples": {
+    "CorePunkServerSamples": {
       "commandName": "Project"
-    },
-    "Container (Dockerfile)": {
-      "commandName": "Docker"
     }
   },
   "AppConfig": {
-    "AppType": "client",
+    //"AppType": "server", // or "client"
     "IpAddress": "127.0.0.1",
     "Port": 8080,
     "Username": "admin",

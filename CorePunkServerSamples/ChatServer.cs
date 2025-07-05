@@ -14,10 +14,10 @@ namespace ServerApp
             _userManager = userManager;
         }
 
-        public void Start()
+        public void Start(IMessageProcessor messageProcessor)
         {
             // Start the server listening loop (accept clients, handle messages)
-            _communicator.StartListening();
+            _communicator.StartListening(messageProcessor);
         }
 
         // Broadcasting the message to all clients
@@ -26,7 +26,7 @@ namespace ServerApp
             // Send a message to all connected clients
             foreach (var client in _userManager.GetAllClients())
             {
-                client.SendMessage(message, _communicator);
+                client.SendMessage(message);
             }
         }
 

@@ -8,7 +8,7 @@ namespace CoreLibrary.Handlers
     public class ClientHandler
     {
         // Define an event to send a message (the client will handle this event)
-        public event Action<Message>? OnMessageReceived; // Declared as nullable to resolve CS8618
+        public event Action<Message>? OnMessageReceived;
 
         // Define other events if needed (e.g., OnConnect, OnDisconnect, etc.)
         public event Action? OnConnect; // Declared as nullable to resolve CS8618

@@ -10,19 +10,16 @@ namespace CoreLibrary.Handlers
 
         private readonly IBroadcastMessage? _broadcastMessage; // This will be ChatServer
         private readonly IClient? _client;  // This will be ChatClient
-        private readonly ICommunicator _communicator; // This will be TcpCommunicator or UdpCommunicator
 
-        public MessageProcessor(LoggingService loggingService, IBroadcastMessage? broadcastMessage, ICommunicator communicator)
+        public MessageProcessor(LoggingService loggingService, IBroadcastMessage? broadcastMessage)
         {
             _loggingService = loggingService;
             _broadcastMessage = broadcastMessage;
-            _communicator = communicator;
         }
-        public MessageProcessor(LoggingService loggingService, IClient? client, ICommunicator communicator)
+        public MessageProcessor(LoggingService loggingService, IClient? client)
         {
             _loggingService = loggingService;
             _client = client;
-            _communicator = communicator;
         }
 
         public void ProcessMessage(Message message)
@@ -33,7 +30,7 @@ namespace CoreLibrary.Handlers
             if (_client != null)
             {
                 // If this is a client, we can send the message
-                _client.ReceiveMessage(_communicator);
+                _client.ReceiveMessage();
             }
             else if (_broadcastMessage != null)
             {

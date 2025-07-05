@@ -7,13 +7,14 @@
       "commandName": "Docker"
     }
   },
-  "ServerConfig": {
+  "Logging": {
+    "LogLevel": "Info"
+  },
+  "AppConfig": {
     "IpAddress": "127.0.0.1",
     "Port": 8080,
     "username": "admin",
-    "password": "admin123"
-  },
-  "Logging": {
-    "LogLevel": "Info"
+    "password": "admin123",
+    "communicator": "UdpCommunicator"
   }
 }
