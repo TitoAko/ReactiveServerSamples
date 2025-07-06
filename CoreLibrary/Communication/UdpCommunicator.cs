@@ -26,10 +26,7 @@ namespace CoreLibrary.Communication
 
             while (true)
             {
-                var endPoint = new IPEndPoint(IPAddress.Parse(_ipAddress), _port);  // Create a new endpoint
-                var receivedBytes = _udpClient.Receive(ref endPoint);  // Pass by reference
                 var message = ReceiveMessage();
-                SendMessage(message);  // Process the received message
             }
         }
 

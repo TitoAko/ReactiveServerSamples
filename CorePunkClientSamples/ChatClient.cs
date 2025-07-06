@@ -49,6 +49,9 @@ namespace ClientApp
             _communicator.Connect();  // Start listening for incoming messages
 
             Console.WriteLine("Connected to the server");
+
+            // Start listening for messages
+            StartListening();
         }
 
         public void Disconnect()
@@ -61,7 +64,6 @@ namespace ClientApp
 
         public void StartListening()
         {
-            // Start listening for messages, etc.
             _communicator.StartListening();
         }
     }

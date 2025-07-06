@@ -12,6 +12,7 @@ namespace ServerApp
         {
             _communicator = communicator;
             _userManager = userManager;
+            Start();  // Start the server when the ChatServer is initialized
         }
 
         public void Start()
