@@ -4,7 +4,7 @@ using CoreLibrary.Messaging.MessageTypes;
 
 namespace ClientApp
 {
-    public class InputHandler(IClient client)
+    public class InputHandler(IClient client, string username)
     {
         public string? GetUserInput()
         {
@@ -22,7 +22,7 @@ namespace ClientApp
                 string? input = GetUserInput();
                 if (!string.IsNullOrEmpty(input))
                 {
-                    var message = new Message("User", input, new TextMessage());
+                    var message = new Message(username, input, new TextMessage());
                     client.SendMessage(message);
                 }
             }

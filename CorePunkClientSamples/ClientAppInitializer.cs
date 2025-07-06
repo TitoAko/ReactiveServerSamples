@@ -11,7 +11,6 @@ namespace ClientApp
         private readonly OutputHandler _outputHandler;
         private readonly ClientHandler _clientHandler;
         private readonly AppLock _appLock;
-        private readonly IClient _chatClient;
         private readonly ICommunicator _communicator;
 
         public ClientAppInitializer()
@@ -23,8 +22,6 @@ namespace ClientApp
             _clientHandler = new ClientHandler();
 
             _communicator = CreateCommunicatorFromConfig(_config.Communicator);
-
-            _chatClient = new ChatClient(_clientHandler, _outputHandler, _config, _communicator);
 
             InitializeClient();
         }
@@ -76,6 +73,13 @@ namespace ClientApp
             }
 
             _loggingService.Log("Client initialized successfully.");
+
+            IClient chatClient = new ChatClient(_clientHandler, _outputHandler, _config, _communicator);
+            InputHandler inputHandler = new InputHandler(chatClient, _config.Username);
+
+            chatClient.Connect(); // Connect the client to the server and start listening for messages
+            
+            Task.Run(inputHandler.HandleUserInput); // Start handling user input
 
             return true;
         }
