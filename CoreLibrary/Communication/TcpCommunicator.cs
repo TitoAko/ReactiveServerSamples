@@ -19,7 +19,7 @@ namespace CoreLibrary.Communication
             _tcpListener = new TcpListener(IPAddress.Parse(_ipAddress), _port);
         }
 
-        public void StartListening(IMessageProcessor messageProcessor)
+        public void StartListening()
         {
             _tcpListener.Start();
             Console.WriteLine("TCP server is listening...");
@@ -30,8 +30,8 @@ namespace CoreLibrary.Communication
 
                 if (message != null)
                 {
-                    // Process the received message
-                    messageProcessor.ProcessMessage(message);
+                    // send the received message
+                    SendMessage(message);
                 }
             }
         }
@@ -68,6 +68,11 @@ namespace CoreLibrary.Communication
         public void Dispose()
         {
             _tcpListener.Dispose();
+        }
+
+        public void Connect()
+        {
+            throw new NotImplementedException();
         }
     }
 }

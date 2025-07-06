@@ -3,7 +3,7 @@ using CoreLibrary.Messaging;
 
 namespace ServerApp
 {
-    public class ChatServer : IBroadcastMessage, IMessageProcessor
+    public class ChatServer : IBroadcastMessage
     {
         private readonly ICommunicator _communicator;
         private readonly UserManager _userManager;
@@ -14,10 +14,10 @@ namespace ServerApp
             _userManager = userManager;
         }
 
-        public void Start(IMessageProcessor messageProcessor)
+        public void Start()
         {
             // Start the server listening loop (accept clients, handle messages)
-            _communicator.StartListening(messageProcessor);
+            _communicator.StartListening();
         }
 
         // Broadcasting the message to all clients

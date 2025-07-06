@@ -45,17 +45,24 @@ namespace ClientApp
 
         public void Connect()
         {
+            Console.WriteLine("Connecting to the server...");
+            _communicator.Connect();  // Start listening for incoming messages
+
             Console.WriteLine("Connected to the server");
         }
 
         public void Disconnect()
         {
+            Console.WriteLine("Disconnecting from the server...");
+            _communicator.StopListening();  // Stop the listening process in the communicator
+
             Console.WriteLine("Disconnected from the server");
         }
 
         public void StartListening()
         {
             // Start listening for messages, etc.
+            _communicator.StartListening();
         }
     }
 }

@@ -20,7 +20,7 @@ namespace CoreLibrary.Communication
             _udpClient = new UdpClient(_ipAddress, _port);
         }
 
-        public void StartListening(IMessageProcessor messageProcessor)
+        public void StartListening()
         {
             Console.WriteLine("UDP server is listening...");
 
@@ -29,12 +29,7 @@ namespace CoreLibrary.Communication
                 var endPoint = new IPEndPoint(IPAddress.Parse(_ipAddress), _port);  // Create a new endpoint
                 var receivedBytes = _udpClient.Receive(ref endPoint);  // Pass by reference
                 var message = ReceiveMessage();
-
-                // Delegate message processing
-                if (message != null)
-                {
-                    messageProcessor.ProcessMessage(message);
-                }
+                SendMessage(message);  // Process the received message
             }
         }
 
@@ -65,6 +60,11 @@ namespace CoreLibrary.Communication
         public void Dispose()
         {
             _udpClient.Dispose();
+        }
+
+        public void Connect()
+        {
+            Console.WriteLine("Connecting to the UDP server...");
         }
     }
 }

@@ -13,7 +13,6 @@ namespace ClientApp
         private readonly AppLock _appLock;
         private readonly IClient _chatClient;
         private readonly ICommunicator _communicator;
-        private readonly IMessageProcessor _messageProcessor;
 
         public ClientAppInitializer()
         {
@@ -27,7 +26,6 @@ namespace ClientApp
 
             _chatClient = new ChatClient(_clientHandler, _outputHandler, _config, _communicator);
 
-            _messageProcessor = new MessageProcessor(_loggingService, _chatClient);
             InitializeClient();
         }
 
@@ -47,7 +45,7 @@ namespace ClientApp
             ICommunicator? communicator;
             try
             {
-                communicator = (ICommunicator?)Activator.CreateInstance(communicatorClass, _config.IpAddress, _config.Port, _messageProcessor);
+                communicator = (ICommunicator?)Activator.CreateInstance(communicatorClass, _config.IpAddress, _config.Port);
 
                 // Create an instance of the communicator class
                 if (communicator == null)
