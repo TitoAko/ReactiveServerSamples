@@ -7,16 +7,22 @@
     /// </summary>
     public class OutputHandler : IDisposable
     {
+        private bool _disposed = false;  // To detect redundant calls
         public void Dispose()
         {
-            this.Dispose();
+            if (!_disposed)
+            {
+                Console.WriteLine("OutputHandler disposed.");
+                DisposeResources();  // Call to clean up resources if necessary
+            }
+            // If already disposed, do nothing
         }
         /// <summary>
         /// Dispose method to clean up resources if necessary
         /// </summary>
         public void DisposeResources()
         {
-            this.DisposeResources();
+            Console.WriteLine("OutputHandler resources disposed.");
         }
         /// <summary>
         /// Display message (messageContent) received from the sender (who sent the message)

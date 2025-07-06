@@ -19,9 +19,15 @@ namespace ClientApp
         {
             while (true)
             {
+                // Get user input
                 string? input = GetUserInput();
                 if (!string.IsNullOrEmpty(input))
                 {
+                    if (input.Equals("exit", StringComparison.OrdinalIgnoreCase))
+                    {
+                        break;
+                    }
+                    // Create a message with the input and send it to the server
                     var message = new Message(username, input, new TextMessage());
                     client.SendMessage(message);
                 }

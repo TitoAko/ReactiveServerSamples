@@ -42,7 +42,7 @@ namespace ClientApp
             ICommunicator? communicator;
             try
             {
-                communicator = (ICommunicator?)Activator.CreateInstance(communicatorClass, _config.IpAddress, _config.Port);
+                communicator = (ICommunicator?)Activator.CreateInstance(communicatorClass, _config.IpAddress, _config.Port, _config.Username);
 
                 // Create an instance of the communicator class
                 if (communicator == null)
@@ -77,7 +77,7 @@ namespace ClientApp
             IClient chatClient = new ChatClient(_clientHandler, _outputHandler, _config, _communicator);
             InputHandler inputHandler = new InputHandler(chatClient, _config.Username);
 
-            chatClient.Connect(); // Connect the client to the server and start listening for messages
+            Task.Run(chatClient.Connect); // Connect the client to the server and start listening for messages
             
             Task.Run(inputHandler.HandleUserInput); // Start handling user input
 
@@ -99,7 +99,6 @@ namespace ClientApp
             ReleaseLock();
             _communicator?.Dispose();
             _clientHandler?.Disconnect();
-            _outputHandler?.DisposeResources();  // Dispose of the OutputHandler if it implements IDisposable
             _outputHandler?.Dispose();
         }
     }

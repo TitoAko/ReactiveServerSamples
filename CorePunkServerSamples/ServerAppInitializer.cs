@@ -42,7 +42,7 @@ namespace ServerApp
 
         public void StartObservables()
         {
-            var udpClient = new UdpClient(9000);
+            var udpClient = new UdpClient(_config.Port);
 
             // Create an observable of incoming packets
             var packetStream = Observable.Create<byte[]>(async (obs, ct) =>
