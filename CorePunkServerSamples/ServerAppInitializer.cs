@@ -1,5 +1,8 @@
-﻿using CoreLibrary.Utilities;
-using System.Net;
+﻿using CoreLibrary.Communication;
+using CoreLibrary.Interfaces;
+using CoreLibrary.Messaging;
+using CoreLibrary.Messaging.MessageTypes;
+using CoreLibrary.Utilities;
 using System.Net.Sockets;
 using System.Reactive.Linq;
 using System.Text;
@@ -10,20 +13,23 @@ namespace ServerApp
     {
         private readonly Configuration _config;
         private readonly AppLock _appLock;
+        private readonly ICommunicator _communicator;
+        private readonly UdpClient _udpClient;
 
         public ServerAppInitializer()
         {
             _config = new Configuration("launchSettings.json");  // Use Configuration to hold all the parameters
             _appLock = new AppLock();
+            _udpClient = new UdpClient(_config.Port);
+            _communicator = new UdpCommunicator(_udpClient, _config.IpAddress, _config.Port, _config.Username);
         }
 
-        public bool InitializeServer()
+        public void InitializeServer()
         {
             // Using ClientLock to check if the server is already running
             if (_appLock.IsInstanceRunning(_config))
             {
                 Console.WriteLine("The server is already running on this IP/Port.");
-                return false;
             }
 
             // Initialize the server logic here...
@@ -31,8 +37,6 @@ namespace ServerApp
             Console.WriteLine("Server is starting...");
 
             StartObservables();
-
-            return true;
         }
 
         public void ReleaseLock()
@@ -42,14 +46,17 @@ namespace ServerApp
 
         public void StartObservables()
         {
-            var udpClient = new UdpClient(_config.Port);
+            Console.WriteLine($"UDP server is listening on port {_config.Port}...");
+
+            // initialize ChatServer
+            var chatServer = new ChatServer(_communicator, new UserManager());
 
             // Create an observable of incoming packets
             var packetStream = Observable.Create<byte[]>(async (obs, ct) =>
             {
                 while (!ct.IsCancellationRequested)
                 {
-                    var result = await udpClient.ReceiveAsync(ct);
+                    var result = await _udpClient.ReceiveAsync(ct);
                     obs.OnNext(result.Buffer);
                 }
                 obs.OnCompleted();
@@ -61,7 +68,12 @@ namespace ServerApp
                 .Select(buf => Encoding.UTF8.GetString(buf))
                 .Throttle(TimeSpan.FromMilliseconds(100))     // avoid flood
                 .Subscribe(
-                    payload => Console.WriteLine($"Received: {payload}"),
+                    payload =>
+                    {
+                        Console.WriteLine($"Received: {payload}");
+                        var message = new Message(_config.Username, payload, new TextMessage());
+                        chatServer.ProcessMessage(message);  // Process the message
+                    },
                     ex => Console.Error.WriteLine($"Error: {ex.Message}"),
                     () => Console.WriteLine("Stream completed.")
                 );
@@ -80,10 +92,11 @@ namespace ServerApp
 
             Console.CancelKeyPress += (s, e) =>
             {
+                Console.WriteLine("Shutting down.");
                 subscription.Dispose();
                 stateSnapshot.Dispose();
-                udpClient.Close();
-                Console.WriteLine("Shutting down.");
+                _udpClient.Close();
+                ReleaseLock();
             };
         }
     }

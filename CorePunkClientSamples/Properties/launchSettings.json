@@ -9,7 +9,7 @@
   },
   "AppConfig": {
     "AppType": "client",
-    "IpAddress": "127.0.0.1",
+    "IpAddress": "127.0.0.2",
     "Port": 8080,
     "Username": "admin",
     "Password": "admin123",

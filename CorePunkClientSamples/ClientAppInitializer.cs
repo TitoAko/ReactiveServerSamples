@@ -12,6 +12,7 @@ namespace ClientApp
         private readonly ClientHandler _clientHandler;
         private readonly AppLock _appLock;
         private readonly ICommunicator _communicator;
+        private readonly IClient _chatClient;
 
         public ClientAppInitializer()
         {
@@ -23,7 +24,10 @@ namespace ClientApp
 
             _communicator = CreateCommunicatorFromConfig(_config.Communicator);
 
+            _chatClient = new ChatClient(_clientHandler, _outputHandler, _communicator, _config);
+
             InitializeClient();
+            Console.WriteLine("ClientAppInitializer initialized successfully. ");
         }
 
         private ICommunicator CreateCommunicatorFromConfig(string communicatorType)
@@ -49,7 +53,11 @@ namespace ClientApp
                 {
                     throw new InvalidOperationException($"Failed to create instance of communicator type: {communicatorType}");
                 }
-                return communicator;
+                else
+                {
+                    _loggingService.Log($"Communicator of type {communicatorType} created successfully.");
+                }
+                    return communicator;
             }
             catch
             {
@@ -74,12 +82,8 @@ namespace ClientApp
 
             _loggingService.Log("Client initialized successfully.");
 
-            IClient chatClient = new ChatClient(_clientHandler, _outputHandler, _config, _communicator);
-            InputHandler inputHandler = new InputHandler(chatClient, _config.Username);
 
-            Task.Run(chatClient.Connect); // Connect the client to the server and start listening for messages
-            
-            Task.Run(inputHandler.HandleUserInput); // Start handling user input
+            _chatClient.Connect(); // Connect the client to the server and start listening for messages
 
             return true;
         }
@@ -98,8 +102,8 @@ namespace ClientApp
         {
             ReleaseLock();
             _communicator?.Dispose();
-            _clientHandler?.Disconnect();
             _outputHandler?.Dispose();
+            _clientHandler?.Disconnect();
         }
     }
 }

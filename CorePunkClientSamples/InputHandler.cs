@@ -9,7 +9,8 @@ namespace ClientApp
         public string? GetUserInput()
         {
             Console.Write("Enter message: ");
-            return Console.ReadLine();
+            string? input = Console.ReadLine(); // Clear the console line before reading input
+            return input;
         }
 
         /// <summary>
@@ -17,8 +18,14 @@ namespace ClientApp
         /// </summary>
         public void HandleUserInput()
         {
+            Console.WriteLine($"Welcome, {username}! Type 'exit' to quit.");
             while (true)
             {
+                // control if it works
+                Console.WriteLine("Waiting for user input...");
+                // Clear the console line before reading input
+                Console.SetCursorPosition(0, Console.CursorTop); // Move cursor to the beginning of the line
+
                 // Get user input
                 string? input = GetUserInput();
                 if (!string.IsNullOrEmpty(input))

@@ -9,7 +9,7 @@ namespace ServerApp
     {
         static void Main(string[] args)
         {
-            new ServerAppInitializer().StartObservables();
+            new ServerAppInitializer().InitializeServer();
         }
     }
 }

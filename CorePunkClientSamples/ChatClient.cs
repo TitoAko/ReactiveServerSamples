@@ -9,20 +9,27 @@ namespace ClientApp
     {
         private readonly ClientHandler _clientHandler;  // Reference to ClientHandler
         private readonly OutputHandler _outputHandler;
-        private readonly Configuration _config;
         private readonly ICommunicator _communicator;
+        private readonly Configuration _config;
+        private readonly InputHandler _inputHandler;
+        private CancellationTokenSource _cts;  // Cancellation token for graceful shutdown
 
-        public ChatClient(ClientHandler clientHandler, OutputHandler outputHandler, Configuration config, ICommunicator communicator)
+        public ChatClient(ClientHandler clientHandler, OutputHandler outputHandler, ICommunicator communicator, Configuration config)
         {
             _clientHandler = clientHandler;
             _outputHandler = outputHandler;
-            _config = config;
             _communicator = communicator;
 
             // Subscribe to events raised by ClientHandler
             _clientHandler.OnMessageReceived += DisplayReceivedMessage;
             _clientHandler.OnConnect += Connect;
             _clientHandler.OnDisconnect += Disconnect;
+            _config = config;
+
+
+            _inputHandler = new InputHandler(this, _config.Username);
+
+            _cts = new CancellationTokenSource();
         }
 
         // Implement IClient methods
@@ -44,14 +51,22 @@ namespace ClientApp
         }
 
         public void Connect()
+        { 
+            Task.Run(StartListening); // Start listening for incoming messages
+            Task.Run(StartInputHandler); // Start handling user input
+        }
+
+        // Start listening in a separate task (non-blocking)
+        public void StartListening()
         {
-            Console.WriteLine("Connecting to the server...");
-            _communicator.Connect();  // Start listening for incoming messages
+            _communicator.Connect();  // Ensure the communicator is connected before starting to listen
+            _communicator.StartListening();
+            Console.WriteLine("Listening for incoming messages finished...");
+        }
 
-            Console.WriteLine("Connected to the server");
-
-            // Start listening for messages
-            StartListening();
+        public void StartInputHandler()
+        {
+            _inputHandler.HandleUserInput();
         }
 
         public void Disconnect()
@@ -60,11 +75,16 @@ namespace ClientApp
             _communicator.StopListening();  // Stop the listening process in the communicator
 
             Console.WriteLine("Disconnected from the server");
+            _cts?.Cancel();  // Cancel the token to stop listening and input handling
         }
 
-        public void StartListening()
+        public void Dispose()
         {
-            _communicator.StartListening();
+            _cts?.Cancel();  // Cancel the token to stop listening and input handling
+            _communicator.Dispose();  // Dispose of the communicator
+            _clientHandler.OnMessageReceived -= DisplayReceivedMessage;  // Unsubscribe from events
+            _clientHandler.OnConnect -= Connect;
+            _clientHandler.OnDisconnect -= Disconnect;
         }
     }
 }
