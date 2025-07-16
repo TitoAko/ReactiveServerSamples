@@ -24,7 +24,7 @@ namespace ClientApp
 
             _communicator = CreateCommunicatorFromConfig(_config.Communicator);
 
-            _chatClient = new ChatClient(_clientHandler, _outputHandler, _communicator, _config);
+            _chatClient = new ChatClient(_clientHandler, _outputHandler, _communicator, _config.Username);
 
             InitializeClient();
             Console.WriteLine("ClientAppInitializer initialized successfully. ");

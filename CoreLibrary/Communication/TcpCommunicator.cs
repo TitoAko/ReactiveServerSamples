@@ -19,7 +19,7 @@ namespace CoreLibrary.Communication
             _tcpListener = new TcpListener(IPAddress.Parse(_ipAddress), _port);
         }
 
-        public void StartListening()
+        public void StartListening(CancellationToken cancellationToken)
         {
             _tcpListener.Start();
             Console.WriteLine("TCP server is listening...");
@@ -60,7 +60,7 @@ namespace CoreLibrary.Communication
             return new Message("Client", messageContent, messageType);
         }
 
-        public void StopListening()
+        public void Stop()
         {
             _tcpListener.Stop();  // Stop listening for incoming messages
         }
@@ -70,7 +70,7 @@ namespace CoreLibrary.Communication
             _tcpListener.Dispose();
         }
 
-        public void Connect()
+        public void Connect(CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }

@@ -14,8 +14,8 @@ namespace CoreLibrary.Interfaces
         /// </summary>
         /// <returns>A message received from the server</returns>
         Message ReceiveMessage();
+        void DisplayReceivedMessage(Message message); // Display a received message (e.g., print to console or UI)
         void Connect();  // Establish a connection (e.g., connect to the server)
         void Disconnect();  // Disconnect from the server
-        void StartListening();  // Start listening for incoming messages
     }
 }

@@ -1,141 +1,68 @@
 ﻿using CoreLibrary.Interfaces;
 using CoreLibrary.Messaging;
 using CoreLibrary.Messaging.MessageTypes;
-using System.Net;
-using System.Net.Sockets;
+using CoreLibrary.Utilities;
 
 namespace CoreLibrary.Communication.UdpCommunication
 {
     public class UdpCommunicator : ICommunicator
     {
-        private readonly UdpClient _udpClient;
-        private readonly int _port;
-        private readonly string _ipAddress;
+        private readonly UdpReceiver _udpReceiver;
+        private readonly UdpSender _udpSender;
         private readonly string _userName;
-        private IPEndPoint _endPoint;
 
-        // Constructor to initialize UDP communicator with server IP and port
-        public UdpCommunicator(UdpClient udpClient, string ipAddress, int port, string userName)
+        public event Action<Message>? OnMessageReceived;
+
+        public UdpCommunicator(Configuration configuration)
         {
-            _udpClient = udpClient;
-            _ipAddress = ipAddress;
-            _port = port;
-            _userName = userName;
-            _endPoint = new IPEndPoint(IPAddress.Parse(_ipAddress), _port);
+            // Initialize UDP receiver and sender
+            _udpReceiver = new UdpReceiver(configuration);
+            _udpSender = new UdpSender(configuration);
+
+            // Subscribe to the message received event in UdpReceiver
+            _udpReceiver.OnMessageReceived += RaiseMessageReceivedEvent;
+            _userName = configuration.Username;
         }
 
-        // Constructor to initialize UDP communicator with client IP and port
-        public UdpCommunicator(string ipAddress, int port, string userName)
-            : this(new UdpClient(), ipAddress, port, userName)
+        public void Connect(CancellationToken cancellationToken)
         {
-            _ipAddress = ipAddress;
-            _port = port;
-            _udpClient = new UdpClient(_port);
-            _userName = userName;
+            // Start the UDP receiver to listen for incoming messages
+            var listenTask = Task.Run(() => StartListening(cancellationToken));
+            // Optionally, send a connection message upon connection
+            var connectMessage = new Message(_userName, "Connecting to server", new TextMessage());
+            SendMessage(connectMessage);
         }
 
-        public void StartListening()
+        public void StartListening(CancellationToken cancellationToken)
         {
-            Console.WriteLine("UDP server is listening...");
-            while (true)
-            {
-                if (_udpClient.Client.Connected)
-                {
-                    if (_udpClient.Available > 0)
-                    {
-                        Console.WriteLine("Checking for messages, 5 sec interval...");
-                        try
-                        {
-                            var message = ReceiveMessage();  // Receive message from the client
-                            if (message != null)
-                            {
-                                Console.WriteLine($"Received message: {message.Content} from {message.Sender}");
-                                // Process the received message (e.g., display it, log it, etc.)
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.WriteLine($"Error receiving message: {ex.Message}");
-                        }
-                    }
-                    else
-                    {
-                        Console.WriteLine("No messages available, waiting for 5 seconds...");
-                        Thread.Sleep(5000);  // Wait for 5 seconds before checking again
-                    }
-                }
-                else
-                {
-                    Console.WriteLine("UDP client is not connected. Can't receive messages");
-                }
-            }
+            // Start the UDP receiver to listen for incoming messages
+            _udpReceiver.StartObservables(cancellationToken);
         }
 
         public void SendMessage(Message message)
         {
-            Console.WriteLine($"Sending message: {message.Content} to {_ipAddress}:{_port}");
-            byte[] messageBytes = System.Text.Encoding.ASCII.GetBytes(message.Content); // Convert message content to bytes
-            try
-            {
-                if (_udpClient.Client.Connected)
-                {
-                    _udpClient.Send(messageBytes, messageBytes.Length);  // Send message over UDP
-                    Console.WriteLine($"Message sent: {message.Content}");
-                }
-                else
-                {
-                    Console.WriteLine("UDP client is not connected. Cannot send message.");
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
-
-        public async Task<Message> ReceiveMessageAsync()
-        {
-            var receivedBytes = await _udpClient.ReceiveAsync();  // Receive data asynchronously
-            string messageContent = System.Text.Encoding.ASCII.GetString(receivedBytes.Buffer);
-            IMessageType messageType = new TextMessage();  // Assume it's a text message
-            return new Message(_userName, messageContent, messageType);
+            _udpSender.SendMessage(message);  // Delegate the sending of the message to UdpSender
         }
 
         public Message ReceiveMessage()
         {
-            _udpClient.Client.ReceiveTimeout = 5000; // Set a timeout for receiving messages
-            byte[] receiveData = _udpClient.Receive(ref _endPoint);  // Receive data synchronously
-            string messageContent = System.Text.Encoding.ASCII.GetString(receiveData);
-            IMessageType messageType = new TextMessage();  // Assume it's a text message
-            var message = new Message(_userName, messageContent, messageType);
-            // var message = Task.Run(() => ReceiveMessageAsync());
-            return message;
+            return _udpReceiver.ReceiveMessage();  // Delegate receiving of the message to UdpReceiver
         }
 
-        /// <summary>
-        /// Close the UDP client and stop listening for messages.
-        /// </summary>
-        public void StopListening()
+        private void RaiseMessageReceivedEvent(Message message)
         {
-            _udpClient.Close();
+            // Raise the OnMessageReceived event for the ChatClient to handle
+            OnMessageReceived?.Invoke(message);
         }
 
         public void Dispose()
         {
-            _udpClient.Dispose();
+            _udpSender.Dispose();
         }
 
-        public void Connect()
+        public void Stop()
         {
-            if (_udpClient != null && !_udpClient.Client.Connected)
-            {
-                Console.WriteLine("Connecting to the UDP server...");
-                _udpClient.Connect(_endPoint);  // Connect the UDP client to the endpoint
-            }
-            else
-            {
-                Console.WriteLine("UDP client is already connected or not initialized.");
-            }
+            _udpReceiver.Stop();
         }
     }
 }

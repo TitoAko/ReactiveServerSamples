@@ -1,7 +1,7 @@
-﻿using CoreLibrary.Handlers;
+﻿using CoreLibrary.Communication.UdpCommunication;
+using CoreLibrary.Handlers;
 using CoreLibrary.Interfaces;
 using CoreLibrary.Messaging;
-using CoreLibrary.Utilities;
 
 namespace ClientApp
 {
@@ -9,40 +9,39 @@ namespace ClientApp
     {
         private readonly ClientHandler _clientHandler;  // Reference to ClientHandler
         private readonly OutputHandler _outputHandler;
-        private readonly ICommunicator _communicator;
-        private readonly Configuration _config;
-        private readonly InputHandler _inputHandler;
-        private CancellationTokenSource _cts;  // Cancellation token for graceful shutdown
+        private readonly ICommunicator _communicator;  // This is the UdpCommunicator now
+        private readonly string _username;
+        private CancellationTokenSource _cancellationTokenSource;
 
-        public ChatClient(ClientHandler clientHandler, OutputHandler outputHandler, ICommunicator communicator, Configuration config)
+        public ChatClient(ClientHandler clientHandler, OutputHandler outputHandler, ICommunicator communicator, string username)
         {
             _clientHandler = clientHandler;
             _outputHandler = outputHandler;
             _communicator = communicator;
+            _username = username;
+            _cancellationTokenSource = new CancellationTokenSource();
 
             // Subscribe to events raised by ClientHandler
             _clientHandler.OnMessageReceived += DisplayReceivedMessage;
             _clientHandler.OnConnect += Connect;
             _clientHandler.OnDisconnect += Disconnect;
-            _config = config;
 
-
-            _inputHandler = new InputHandler(this, _config.Username);
-
-            _cts = new CancellationTokenSource();
+            // Subscribe to the message receiver (UdpReceiver inside UdpCommunicator)
+            if (_communicator is UdpCommunicator udpCommunicator)
+            {
+                udpCommunicator.OnMessageReceived += HandleReceivedMessage;
+            }
         }
 
         // Implement IClient methods
         public void SendMessage(Message message)
         {
-            // Logic to send message
-            _communicator.SendMessage(message);
+            _communicator.SendMessage(message);  // Send message through communicator
         }
 
         public Message ReceiveMessage()
         {
-            // Logic to receive a message
-            return _communicator.ReceiveMessage();
+            return _communicator.ReceiveMessage();  // Receive message through communicator
         }
 
         public void DisplayReceivedMessage(Message message)
@@ -50,41 +49,38 @@ namespace ClientApp
             _outputHandler.DisplayMessage(message.Sender, message.Content);
         }
 
+        public void HandleReceivedMessage(Message message)
+        {
+            // Process incoming messages
+            _clientHandler.ReceiveMessage(message);
+        }
+
         public void Connect()
-        { 
-            Task.Run(StartListening); // Start listening for incoming messages
-            Task.Run(StartInputHandler); // Start handling user input
-        }
-
-        // Start listening in a separate task (non-blocking)
-        public void StartListening()
         {
-            _communicator.Connect();  // Ensure the communicator is connected before starting to listen
-            _communicator.StartListening();
-            Console.WriteLine("Listening for incoming messages finished...");
-        }
-
-        public void StartInputHandler()
-        {
-            _inputHandler.HandleUserInput();
+            Console.WriteLine("Connecting to the server...");
+            _communicator.Connect(_cancellationTokenSource.Token);  // Start listening for incoming messages
+            Console.WriteLine("Connected to the server");
         }
 
         public void Disconnect()
         {
             Console.WriteLine("Disconnecting from the server...");
-            _communicator.StopListening();  // Stop the listening process in the communicator
-
+            _communicator.Stop();  // Stop listening for messages
             Console.WriteLine("Disconnected from the server");
-            _cts?.Cancel();  // Cancel the token to stop listening and input handling
+        }
+
+        public void StartInputHandler()
+        {
+            InputHandler inputHandler = new InputHandler(this, _username);
+            Task.Run(() => inputHandler.HandleUserInput());  // Run user input handler on a new task
         }
 
         public void Dispose()
         {
-            _cts?.Cancel();  // Cancel the token to stop listening and input handling
-            _communicator.Dispose();  // Dispose of the communicator
-            _clientHandler.OnMessageReceived -= DisplayReceivedMessage;  // Unsubscribe from events
+            _clientHandler.OnMessageReceived -= DisplayReceivedMessage;
             _clientHandler.OnConnect -= Connect;
             _clientHandler.OnDisconnect -= Disconnect;
+            _communicator.Dispose();
         }
     }
 }
