@@ -1,4 +1,5 @@
-﻿using CoreLibrary.Handlers;
+﻿using CoreLibrary.Factories;
+using CoreLibrary.Handlers;
 using CoreLibrary.Interfaces;
 using CoreLibrary.Utilities;
 
@@ -22,47 +23,12 @@ namespace ClientApp
             _outputHandler = new OutputHandler();
             _clientHandler = new ClientHandler();
 
-            _communicator = CreateCommunicatorFromConfig(_config.Communicator);
+            _communicator = CommunicatorFactory.Create(_config);
 
             _chatClient = new ChatClient(_clientHandler, _outputHandler, _communicator, _config.Username);
 
             InitializeClient();
             Console.WriteLine("ClientAppInitializer initialized successfully. ");
-        }
-
-        private ICommunicator CreateCommunicatorFromConfig(string communicatorType)
-        {
-            Type? communicatorClass = AppDomain.CurrentDomain
-                .GetAssemblies()
-                .SelectMany(assembly => assembly.GetTypes())
-                .FirstOrDefault(type => type.IsClass
-                && typeof(ICommunicator).IsAssignableFrom(type)
-                && type.Name.Equals(communicatorType, StringComparison.OrdinalIgnoreCase)
-                && type.Namespace == "CoreLibrary.Communication");
-            if (communicatorClass == null)
-            {
-                throw new ArgumentException($"Invalid communicator type: {communicatorType}");
-            }
-            ICommunicator? communicator;
-            try
-            {
-                communicator = (ICommunicator?)Activator.CreateInstance(communicatorClass, _config.IpAddress, _config.Port, _config.Username);
-
-                // Create an instance of the communicator class
-                if (communicator == null)
-                {
-                    throw new InvalidOperationException($"Failed to create instance of communicator type: {communicatorType}");
-                }
-                else
-                {
-                    _loggingService.Log($"Communicator of type {communicatorType} created successfully.");
-                }
-                    return communicator;
-            }
-            catch
-            {
-                throw new InvalidOperationException($"Failed to create instance of communicator type: {communicatorType}");
-            }
         }
 
         public bool InitializeClient()

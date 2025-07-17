@@ -1,4 +1,4 @@
-﻿using CoreLibrary.Communication.UdpCommunication;
+﻿using CoreLibrary.Factories;
 using CoreLibrary.Interfaces;
 using CoreLibrary.Utilities;
 
@@ -15,7 +15,7 @@ namespace ServerApp
         {
             _config = new Configuration("launchSettings.json");  // Use Configuration to hold all the parameters
             _appLock = new AppLock();
-            _communicator = new UdpCommunicator(_config);
+            _communicator = CommunicatorFactory.Create(_config);
         }
 
         public void InitializeServer()
@@ -44,9 +44,8 @@ namespace ServerApp
 
             // initialize ChatServer
             var chatServer = new ChatServer(new UserManager());
-            var udpReceiver = _communicator as UdpCommunicator;
 
-            udpReceiver?.StartListening(_cancellationTokenSource.Token); // TODO: add real cancellation
+            _communicator.StartListening(_cancellationTokenSource.Token); // TODO: add real cancellation
 
             Console.CancelKeyPress += (s, e) =>
             {
@@ -54,8 +53,8 @@ namespace ServerApp
                 Console.WriteLine("Shutting down.");
 
                 _cancellationTokenSource.Cancel();  // Signal cancellation to observables
-                udpReceiver?.Stop();                // Clean up Rx
-                udpReceiver?.Dispose();             // Final cleanup
+                _communicator.Stop();                // Clean up Rx
+                _communicator.Dispose();             // Final cleanup
                 ReleaseLock();
             };
         }
