@@ -24,6 +24,7 @@ namespace ClientApp
             _clientHandler = new ClientHandler();
 
             _communicator = CommunicatorFactory.Create(_config);
+            _communicator = CommunicatorFactory.Create(_config);
 
             _chatClient = new ChatClient(_clientHandler, _outputHandler, _communicator, _config.Username);
 
