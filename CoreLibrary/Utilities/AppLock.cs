@@ -1,25 +1,54 @@
-﻿namespace CoreLibrary.Utilities
+﻿using System;
+using System.Threading;
+
+namespace CoreLibrary.Utilities
 {
-    public class AppLock
+    public class AppLock : IDisposable
     {
         private Mutex? _mutex;
+        private bool _lockAcquired;
 
-        // Check if the client/server is already running for the given user/IP/port combination
+        /// <summary>
+        /// Attempts to acquire a mutex based on the configuration.
+        /// Returns true if this is the first instance running.
+        /// </summary>
         public bool IsInstanceRunning(Configuration config)
         {
-            // Generate a unique mutex name based on user/IP/port and app type (client or server)
             string mutexName = $"AppLock_{config.Username}_{config.IpAddress}_{config.Port}_{config.AppType}";
 
-            // Attempt to create or open a mutex with the unique name
             _mutex = new Mutex(true, mutexName, out bool createdNew);
+            _lockAcquired = createdNew;
 
-            return !createdNew;  // If the mutex already exists, another instance is running
+            return !createdNew; // If already exists → another instance is running
         }
 
-        // Release the mutex lock
+        /// <summary>
+        /// Releases the lock only if acquired by this instance.
+        /// </summary>
         public void ReleaseLock()
         {
-            _mutex?.ReleaseMutex();
+            if (_lockAcquired && _mutex != null)
+            {
+                try
+                {
+                    _mutex.ReleaseMutex();
+                }
+                catch (ApplicationException)
+                {
+                    // Possibly already released — can be ignored or logged
+                }
+                finally
+                {
+                    _mutex.Dispose();
+                    _mutex = null;
+                    _lockAcquired = false;
+                }
+            }
+        }
+
+        public void Dispose()
+        {
+            ReleaseLock(); // Auto-clean if forgotten
         }
     }
 }

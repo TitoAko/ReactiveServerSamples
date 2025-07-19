@@ -1,38 +1,34 @@
 ﻿using CoreLibrary.Utilities;
-using Xunit;
+using Microsoft.Extensions.Configuration;
 using System;
-using System.IO;
+using System.Collections.Generic;
+using Xunit;
 
 namespace CoreLibrary.Tests.Utilities
 {
-    public class AppLockTests : IDisposable
+    public class AppLockTests
     {
-        private readonly string _tempConfigPath;
-
-        public AppLockTests()
+        private IConfiguration CreateInMemoryConfig(string usernameSuffix)
         {
-            _tempConfigPath = Path.GetTempFileName();
-        }
-
-        private Configuration CreateConfig(string usernameSuffix)
-        {
-            var configContent = $$"""
+            var values = new Dictionary<string, string?>
             {
-              "Username": "TestUser{{usernameSuffix}}",
-              "IpAddress": "127.0.0.1",
-              "Port": 9999,
-              "Communicator": "UdpCommunicator"
-            }
-            """;
+                ["AppConfig:Username"] = $"TestUser{usernameSuffix}",
+                ["AppConfig:Password"] = "testpass",
+                ["AppConfig:IpAddress"] = "127.0.0.1",
+                ["AppConfig:Port"] = "9999",
+                ["AppConfig:Communicator"] = "UdpCommunicator",
+                ["AppConfig:AppType"] = "Server"
+            };
 
-            File.WriteAllText(_tempConfigPath, configContent);
-            return new Configuration(_tempConfigPath);
+            return new ConfigurationBuilder()
+                .AddInMemoryCollection(values)
+                .Build();
         }
 
         [Fact]
         public void ShouldAllowFirstInstance()
         {
-            var config = CreateConfig("A");
+            var config = new Configuration(CreateInMemoryConfig("A"));
             var appLock = new AppLock();
 
             var result = appLock.IsInstanceRunning(config);
@@ -44,7 +40,7 @@ namespace CoreLibrary.Tests.Utilities
         [Fact]
         public void ShouldBlockSecondInstance()
         {
-            var config = CreateConfig("B");
+            var config = new Configuration(CreateInMemoryConfig("B"));
             var appLock1 = new AppLock();
             var appLock2 = new AppLock();
 
@@ -61,7 +57,7 @@ namespace CoreLibrary.Tests.Utilities
         [Fact]
         public void ShouldReleaseLockProperly()
         {
-            var config = CreateConfig("C");
+            var config = new Configuration(CreateInMemoryConfig("C"));
             var appLock = new AppLock();
 
             var first = appLock.IsInstanceRunning(config);
@@ -74,14 +70,6 @@ namespace CoreLibrary.Tests.Utilities
             Assert.False(second);
 
             appLock2.ReleaseLock();
-        }
-
-        public void Dispose()
-        {
-            if (File.Exists(_tempConfigPath))
-            {
-                File.Delete(_tempConfigPath);
-            }
         }
     }
 }

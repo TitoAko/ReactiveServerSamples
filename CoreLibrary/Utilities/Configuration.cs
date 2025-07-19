@@ -12,13 +12,16 @@ namespace CoreLibrary.Utilities
         public string AppType { get; }
 
         public Configuration(string configFileName = "appsettings.json")
+            : this(new ConfigurationBuilder()
+                  .SetBasePath(Directory.GetCurrentDirectory())
+                  .AddJsonFile(configFileName, optional: false)
+                  .AddEnvironmentVariables()
+                  .Build())
         {
-            var config = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile(configFileName, optional: false)
-                .AddEnvironmentVariables() // Support for Docker/env variables
-                .Build();
+        }
 
+        public Configuration(IConfiguration config)
+        {
             var section = config.GetSection("AppConfig");
 
             Username = section["Username"] ?? throw new InvalidOperationException("Missing Username");
