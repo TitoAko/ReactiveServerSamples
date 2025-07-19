@@ -18,8 +18,8 @@ Focus is placed on:
 | ✅ | Module Name           | Target Class        | Key Tests                                                           | Status       |
 |----|------------------------|----------------------|----------------------------------------------------------------------|--------------|
 | 🟩 | Client Events          | `ClientHandler`      | Event triggers: `OnConnect`, `OnDisconnect`, `OnMessageReceived`     | ✅ Done       |
-| ⬜ | AppLock Check          | `AppLock`            | Prevents multiple instances on same config                          | ⏳ In Progress |
-| ⬜ | Packet Trigger         | `UdpReceiver`        | StartListening, message reception observable                        | 🚧 Planned    |
+| ⬜ | AppLock Check          | `AppLock`            | Prevents multiple instances on same config                          | ✅ Done |
+| ⬜ | Packet Trigger         | `UdpReceiver`        | StartListening, message reception observable                        | ⏳ In Progress    |
 | ⬜ | Disposal Guard (UDP)   | `UdpCommunicator`    | Ensure client not disposed during/after send/receive                | 🚧 Planned    |
 | ⬜ | Config Loader          | `Configuration`      | Loads from file, fallback to defaults                               | Optional     |
 | ⬜ | Message Format         | `Message`            | Structure, sender, message type correctness                         | Optional     |

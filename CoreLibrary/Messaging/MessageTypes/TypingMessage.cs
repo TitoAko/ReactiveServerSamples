@@ -8,6 +8,7 @@ namespace CoreLibrary.Messaging.MessageTypes
         {
             // Process typing indicator
             Console.WriteLine($"{sender} is typing...");
+            Console.WriteLine($"{content}");
         }
     }
 }
