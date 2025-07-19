@@ -19,9 +19,9 @@ Focus is placed on:
 |----|------------------------|----------------------|----------------------------------------------------------------------|--------------|
 | ✅ | Client Events          | `ClientHandler`      | Event triggers: `OnConnect`, `OnDisconnect`, `OnMessageReceived`    | ✅ Done         |
 | ✅ | AppLock Check          | `AppLock`            | Prevents multiple instances on same config                          | ✅ Done         |
-| ✅ | Input Parsing          | `InputHandler`       | Interprets raw console input into commands or messages              | 🚧 Needs Review |
+| ✅ | Input Parsing          | `InputHandler`       | Interprets raw console input into commands or messages              | ✅ Done         |
 | ✅ | Packet Trigger         | `UdpReceiver`        | StartObservables, deserialization, and observable emission          | ✅ Done         |
-| ⬜ | Disposal Guard (UDP)   | `UdpCommunicator`    | Ensure client not disposed during/after send/receive                | 🚧 Planned       |
+| ✅ | Disposal Guard (UDP)   | `UdpCommunicator`    | Ensure client not disposed during/after send/receive                | ✅ Done         |
 | ⬜ | Config Loader          | `Configuration`      | Loads from file, fallback to defaults                               | Optional          |
 | ⬜ | Message Format         | `Message`            | Structure, sender, message type correctness                         | Optional          |
 

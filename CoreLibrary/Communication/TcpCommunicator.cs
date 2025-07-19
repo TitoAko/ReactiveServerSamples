@@ -36,14 +36,11 @@ namespace CoreLibrary.Communication
             }
         }
 
-        public void SendMessage(Message message)
+        public Task SendMessage(Message message, CancellationToken cancellationToken = default)
         {
-            using (var tcpClient = new TcpClient(_ipAddress, _port))
-            {
-                var stream = tcpClient.GetStream();
-                byte[] messageBytes = System.Text.Encoding.ASCII.GetBytes(message.Content); // Convert message content to bytes
-                stream.Write(messageBytes, 0, messageBytes.Length);  // Send message
-            }
+            // Placeholder async-compatible method
+            Console.WriteLine($"[TCP SEND SIMULATION] {message.Sender}: {message.Content}");
+            return Task.CompletedTask;
         }
 
         public Message ReceiveMessage()

@@ -30,7 +30,7 @@ namespace CoreLibrary.Communication.UdpCommunication
             var listenTask = Task.Run(() => StartListening(cancellationToken));
             // Optionally, send a connection message upon connection
             var connectMessage = new Message(_userName, "Connecting to server", new TextMessage());
-            SendMessage(connectMessage);
+            _ = SendMessage(connectMessage, cancellationToken); // fire and forget connect message
         }
 
         public void StartListening(CancellationToken cancellationToken)
@@ -39,9 +39,9 @@ namespace CoreLibrary.Communication.UdpCommunication
             _udpReceiver.StartObservables(cancellationToken);
         }
 
-        public void SendMessage(Message message)
+        public async Task SendMessage(Message message, CancellationToken cancellationToken = default)
         {
-            _udpSender.SendMessage(message);  // Delegate the sending of the message to UdpSender
+            await _udpSender.SendMessageAsync(message, cancellationToken).ConfigureAwait(false);  // Delegate the sending of the message to UdpSender
         }
 
         public Message ReceiveMessage()
@@ -57,12 +57,15 @@ namespace CoreLibrary.Communication.UdpCommunication
 
         public void Dispose()
         {
+            _udpReceiver.OnMessageReceived -= RaiseMessageReceivedEvent;
+            _udpReceiver.Dispose();
             _udpSender.Dispose();
         }
 
         public void Stop()
         {
             _udpReceiver.Stop();
+            // No Stop() on sender, but maybe log or extend later
         }
     }
 }
