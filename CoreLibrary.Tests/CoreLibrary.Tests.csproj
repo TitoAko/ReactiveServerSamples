@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CoreLibrary\CoreLibrary.csproj" />
+    <ProjectReference Include="..\CorePunkClientSamples\ClientApp.csproj" />
   </ItemGroup>
 
   <ItemGroup>

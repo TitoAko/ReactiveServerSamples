@@ -6,39 +6,53 @@ namespace ClientApp
 {
     public class InputHandler(IClient client, string username)
     {
+        private static bool IsExit(string? input) =>
+            string.Equals(input?.Trim(), "exit", StringComparison.OrdinalIgnoreCase);
+
         public string? GetUserInput()
         {
             Console.Write("Enter message: ");
-            string? input = Console.ReadLine(); // Clear the console line before reading input
+            string? input = Console.ReadLine();
             return input;
         }
 
         /// <summary>
-        /// Continuously handles user input and sends it when available
+        /// Handles the full interactive loop for user input.
         /// </summary>
         public void HandleUserInput()
         {
             Console.WriteLine($"Welcome, {username}! Type 'exit' to quit.");
             while (true)
             {
-                // control if it works
                 Console.WriteLine("Waiting for user input...");
-                // Clear the console line before reading input
-                Console.SetCursorPosition(0, Console.CursorTop); // Move cursor to the beginning of the line
+                Console.SetCursorPosition(0, Console.CursorTop);
 
-                // Get user input
                 string? input = GetUserInput();
                 if (!string.IsNullOrEmpty(input))
                 {
-                    if (input.Equals("exit", StringComparison.OrdinalIgnoreCase))
-                    {
+                    var (shouldExit, message) = Parse(input, username);
+
+                    if (shouldExit)
                         break;
-                    }
-                    // Create a message with the input and send it to the server
-                    var message = new Message(username, input, new TextMessage());
-                    client.SendMessage(message);
+
+                    if (message is not null)
+                        client.SendMessage(message);
                 }
             }
+        }
+
+        /// <summary>
+        /// Parses a raw input string and returns either an exit flag or a constructed message.
+        /// </summary>
+        public static (bool ShouldExit, Message? Message) Parse(string? input, string username)
+        {
+            if (string.IsNullOrWhiteSpace(input))
+                return (false, null);
+
+            if (string.Equals(input.Trim(), "exit", StringComparison.OrdinalIgnoreCase))
+                return (true, null);
+
+            return (false, new Message(username, input, new TextMessage()));
         }
     }
 }
