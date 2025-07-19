@@ -5,6 +5,7 @@ using CoreLibrary.Utilities;
 using System.Net.Sockets;
 using System.Reactive.Linq;
 using System.Text;
+using System.Text.Json;
 
 namespace CoreLibrary.Communication.UdpCommunication
 {
@@ -60,13 +61,26 @@ namespace CoreLibrary.Communication.UdpCommunication
                 .Subscribe(
                     async payload =>
                     {
-                        Console.WriteLine($"Received: {payload}");
-                        var message = new Message(_config.Username, payload, new TextMessage());
-                        OnMessageReceived?.Invoke(message);
-
-                        if (_messageProcessor != null)
+                        try
                         {
-                            await _messageProcessor.ProcessAsync(message); // optional processing
+                            var message = JsonSerializer.Deserialize<Message>(payload, new JsonSerializerOptions
+                            {
+                                PropertyNameCaseInsensitive = true,
+                                AllowTrailingCommas = true,
+                                Converters = { new MessageTypeConverter() }
+                            });
+
+                            if (message is not null)
+                            {
+                                OnMessageReceived?.Invoke(message);
+
+                                if (_messageProcessor != null)
+                                    await _messageProcessor.ProcessAsync(message);
+                            }
+                        }
+                        catch (JsonException ex)
+                        {
+                            Console.Error.WriteLine($"Failed to deserialize message: {ex.Message}");
                         }
                     },
                     ex => Console.Error.WriteLine($"Stream error: {ex.Message}"),
