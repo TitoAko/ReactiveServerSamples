@@ -4,11 +4,17 @@ using CoreLibrary.Messaging.MessageTypes;
 
 namespace ClientApp
 {
+    /// <summary>
+    /// Handles user input interaction, including message parsing and exit control.
+    /// </summary>
     public class InputHandler(IClient client, string username)
     {
         private static bool IsExit(string? input) =>
             string.Equals(input?.Trim(), "exit", StringComparison.OrdinalIgnoreCase);
 
+        /// <summary>
+        /// Prompts the user for input and returns the string entered.
+        /// </summary>
         public string? GetUserInput()
         {
             Console.Write("Enter message: ");
@@ -44,6 +50,9 @@ namespace ClientApp
         /// <summary>
         /// Parses a raw input string and returns either an exit flag or a constructed message.
         /// </summary>
+        /// <param name="input">The raw input text from the user.</param>
+        /// <param name="username">The sender's username to attach to the message.</param>
+        /// <returns>A tuple indicating whether the command is an exit and the parsed message object.</returns>
         public static (bool ShouldExit, Message? Message) Parse(string? input, string username)
         {
             if (string.IsNullOrWhiteSpace(input))

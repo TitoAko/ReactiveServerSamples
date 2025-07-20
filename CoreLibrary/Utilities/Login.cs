@@ -1,7 +1,14 @@
 ﻿namespace CoreLibrary.Utilities
 {
+    /// <summary>
+    /// Command-line login prompt that validates non-empty user input.
+    /// </summary>
     public class Login
     {
+        /// <summary>
+        /// Prompts the user to enter valid credentials interactively.
+        /// </summary>
+        /// <returns>Tuple containing the username and password.</returns>
         public static (string username, string password)? GetUserCredentials()
         {
             Console.WriteLine("Enter Username:");

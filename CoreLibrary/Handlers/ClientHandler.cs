@@ -7,25 +7,44 @@ namespace CoreLibrary.Handlers
     /// </summary>
     public class ClientHandler
     {
-        // Define an event to send a message (the client will handle this event)
+        // The client will handle these events
+        /// <summary>
+        /// Event triggered when a new message is received from the client.
+        /// </summary>
         public event Action<Message>? OnMessageReceived;
 
-        // Define other events if needed (e.g., OnConnect, OnDisconnect, etc.)
-        public event Action? OnConnect; // Declared as nullable to resolve CS8618
-        public event Action? OnDisconnect; // Declared as nullable to resolve CS8618
+        /// <summary>
+        /// Event triggered when the client connects.
+        /// </summary>
+        public event Action? OnConnect;
 
+        /// <summary>
+        /// Event triggered when the client disconnects.
+        /// </summary>
+        public event Action? OnDisconnect;
+
+        /// <summary>
+        /// Handles a received message and notifies any subscribers.
+        /// </summary>
+        /// <param name="message">The received message.</param>
         public void ReceiveMessage(Message message)
         {
             // Raise the event when a message is received
             OnMessageReceived?.Invoke(message);
         }
 
+        /// <summary>
+        /// Triggers the connect event.
+        /// </summary>
         public void Connect()
         {
             // Raise the connection event
             OnConnect?.Invoke();
         }
 
+        /// <summary>
+        /// Triggers the disconnect event.
+        /// </summary>
         public void Disconnect()
         {
             // Raise the disconnect event

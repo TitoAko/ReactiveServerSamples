@@ -5,6 +5,9 @@ using CoreLibrary.Utilities;
 
 namespace ClientApp
 {
+    /// <summary>
+    /// Responsible for setting up the client environment, including configuration, logging, authentication, and lock enforcement.
+    /// </summary>
     public class ClientAppInitializer : IDisposable
     {
         private readonly Configuration _config;
@@ -15,6 +18,9 @@ namespace ClientApp
         private readonly ICommunicator _communicator;
         private readonly IClient _chatClient;
 
+        /// <summary>
+        /// Initializes the application and sets up all core components.
+        /// </summary>
         public ClientAppInitializer()
         {
             _config = new Configuration("launchSettings.json");  // Use AppConfiguration to hold all the parameters
@@ -31,6 +37,9 @@ namespace ClientApp
             Console.WriteLine("ClientAppInitializer initialized successfully. ");
         }
 
+        /// <summary>
+        /// Performs authentication, checks lock, and connects the client.
+        /// </summary>
         public bool InitializeClient()
         {
             if (!AuthenticateUser())
@@ -54,17 +63,27 @@ namespace ClientApp
             return true;
         }
 
+        /// <summary>
+        /// Authenticates the user based on configuration.
+        /// </summary>
         private bool AuthenticateUser()
         {
             return UserAuthenticator.Authenticate(_config.Username, _config.Password);
         }
 
+        /// <summary>
+        /// Releases the application-level lock.
+        /// </summary>
         public void ReleaseLock()
         {
             _appLock.ReleaseLock();  // Release the lock after the client finishes
         }
 
+        /// <summary>
+        /// Releases the application lock, disposes internal resources, and performs cleanup operations.
+        /// </summary>
         public void Dispose()
+
         {
             ReleaseLock();
             _communicator?.Dispose();

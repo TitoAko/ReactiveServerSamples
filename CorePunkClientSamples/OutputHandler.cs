@@ -8,6 +8,10 @@
     public class OutputHandler : IDisposable
     {
         private bool _disposed = false;  // To detect redundant calls
+        /// <summary>
+        /// Disposes the <see cref="OutputHandler"/> and releases any held resources.
+        /// Currently, no resources are held, so this is a placeholder for future extensions.
+        /// </summary>
         public void Dispose()
         {
             if (!_disposed)

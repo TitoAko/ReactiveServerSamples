@@ -2,27 +2,35 @@
 using CoreLibrary.Utilities;
 using System.Net.Sockets;
 using System.Text;
-using System.Threading;
 
 namespace CoreLibrary.Communication.UdpCommunication
 {
+    /// <summary>
+    /// Handles sending serialized messages over UDP.
+    /// </summary>
     public class UdpSender
     {
         private readonly UdpClient _udpClient;
         private readonly Configuration _configuration;
 
+        /// <summary>
+        /// Initializes a new instance of the sender with the given config.
+        /// </summary>
         public UdpSender(Configuration configuration)
         {
             _configuration = configuration;
             _udpClient = new UdpClient();
         }
 
+        /// <summary>
+        /// Sends a message asynchronously using UDP.
+        /// </summary>
+        /// <param name="message">The message to send.</param>
+        /// <param name="cancellationToken">Token for graceful cancellation.</param>
         public async Task SendMessageAsync(Message message, CancellationToken cancellationToken = default)
         {
             byte[] messageBytes = Encoding.ASCII.GetBytes(message.Content);
 
-            // UdpClient.SendAsync doesn't accept a cancellation token directly,
-            // but we respect cancellation manually
             if (cancellationToken.IsCancellationRequested)
                 return;
 
@@ -30,6 +38,9 @@ namespace CoreLibrary.Communication.UdpCommunication
                 .ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// Disposes the underlying UDP client.
+        /// </summary>
         public void Dispose()
         {
             _udpClient.Dispose();

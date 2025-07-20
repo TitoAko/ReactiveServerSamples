@@ -3,6 +3,10 @@ using CoreLibrary.Utilities;
 
 namespace CoreLibrary.Factories
 {
+    /// <summary>
+    /// Factory class for creating communicator instances based on configuration.
+    /// Supports dynamic instantiation of UDP, TCP, or other future communication protocols.
+    /// </summary>
     public static class CommunicatorFactory
     {
         /// <summary>

@@ -2,20 +2,37 @@
 
 namespace CoreLibrary.Interfaces
 {
+    /// <summary>
+    /// Defines methods for a client capable of sending, receiving, and displaying messages.
+    /// </summary>
     public interface IClient
     {
         /// <summary>
-        /// send message to the server
+        /// Sends a message to the server.
         /// </summary>
-        /// <param name="message">Message to send to the server</param>
+        /// <param name="message">The message to send.</param>
         void SendMessage(Message message);
+
         /// <summary>
-        /// Receive message from the server
+        /// Receives a message from the server.
         /// </summary>
-        /// <returns>A message received from the server</returns>
+        /// <returns>The message received.</returns>
         Message ReceiveMessage();
-        void DisplayReceivedMessage(Message message); // Display a received message (e.g., print to console or UI)
-        void Connect();  // Establish a connection (e.g., connect to the server)
-        void Disconnect();  // Disconnect from the server
+
+        /// <summary>
+        /// Displays a received message to the user interface or console.
+        /// </summary>
+        /// <param name="message">The message to display.</param>
+        void DisplayReceivedMessage(Message message);
+
+        /// <summary>
+        /// Establishes a connection to the server or communication endpoint.
+        /// </summary>
+        void Connect();
+
+        /// <summary>
+        /// Terminates the connection to the server or communication endpoint.
+        /// </summary>
+        void Disconnect();
     }
 }

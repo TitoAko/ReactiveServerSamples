@@ -9,6 +9,9 @@ using System.Text.Json;
 
 namespace CoreLibrary.Communication.UdpCommunication
 {
+    /// <summary>
+    /// Handles receiving UDP packets, exposing an observable stream of messages.
+    /// </summary>
     public class UdpReceiver
     {
         private readonly UdpClient _udpClient;
@@ -17,19 +20,28 @@ namespace CoreLibrary.Communication.UdpCommunication
         private IDisposable? _subscription;
         private IDisposable? _stateSnapshot;
 
+        /// <summary>
+        /// Fired when a valid message is received and parsed.
+        /// </summary>
         public event Action<Message>? OnMessageReceived;
 
+        /// <summary>
+        /// Initializes the UDP receiver and prepares it for asynchronous listening.
+        /// </summary>
         public UdpReceiver(Configuration configuration, IMessageProcessor? messageProcessor = null)
         {
             _config = configuration;
             _udpClient = new UdpClient(_config.Port);
             _messageProcessor = messageProcessor;
         }
+
+        /// <summary>
+        /// Starts the reactive observables to receive and deserialize messages.
+        /// </summary>
         public void StartObservables(CancellationToken cancellationToken)
         {
             Console.WriteLine("Rx observables starting...");
 
-            // Create an observable of incoming packets
             var packetStream = Observable.Create<byte[]>(async (observer, ct) =>
             {
                 while (!ct.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
@@ -53,11 +65,10 @@ namespace CoreLibrary.Communication.UdpCommunication
                 }
             });
 
-            // Subscribe with throttling and parsing
             _subscription = packetStream
                 .Where(buf => buf.Length > 0)
                 .Select(buf => Encoding.UTF8.GetString(buf))
-                .Throttle(TimeSpan.FromMilliseconds(100))     // avoid flood
+                .Throttle(TimeSpan.FromMilliseconds(100))
                 .Subscribe(
                     async payload =>
                     {
@@ -73,7 +84,6 @@ namespace CoreLibrary.Communication.UdpCommunication
                             if (message is not null)
                             {
                                 OnMessageReceived?.Invoke(message);
-
                                 if (_messageProcessor != null)
                                     await _messageProcessor.ProcessAsync(message);
                             }
@@ -87,7 +97,6 @@ namespace CoreLibrary.Communication.UdpCommunication
                     () => Console.WriteLine("Stream completed.")
                 );
 
-            // A timer observable firing every second
             var ticker = Observable.Interval(TimeSpan.FromSeconds(1));
 
             _stateSnapshot = ticker
@@ -95,19 +104,13 @@ namespace CoreLibrary.Communication.UdpCommunication
                     (tick, latestPacket) => new { Time = tick, Packet = latestPacket })
                 .Subscribe(tick =>
                 {
-
-                    // Build and send state snapshot back to clients
                     Console.WriteLine($"Tick {tick.Time}, last packet size: {tick.Packet.Length}");
                 });
         }
 
-        public void DisposeResources()
-        {
-            Console.WriteLine("Shutting down.");
-            _subscription?.Dispose();
-            _stateSnapshot?.Dispose();
-        }
-
+        /// <summary>
+        /// Stops the receiver and disposes observables.
+        /// </summary>
         public void Stop()
         {
             Console.WriteLine("Stopping UdpReceiver");
@@ -115,18 +118,34 @@ namespace CoreLibrary.Communication.UdpCommunication
             _subscription = null;
             _stateSnapshot?.Dispose();
             _stateSnapshot = null;
-            _udpClient.Close(); // Safe close
+            _udpClient.Close();
         }
 
+        /// <summary>
+        /// Releases all internal resources.
+        /// </summary>
         public void Dispose()
         {
             Stop();
-            _udpClient.Dispose(); // Only dispose manually when fully shut down
+            _udpClient.Dispose();
         }
 
+        /// <summary>
+        /// Returns a test message. Only used for diagnostics or placeholder behavior.
+        /// </summary>
         public Message ReceiveMessage()
         {
             return new Message("Server", "Test message", new TextMessage());
+        }
+
+        /// <summary>
+        /// Disposes internal observables.
+        /// </summary>
+        public void DisposeResources()
+        {
+            Console.WriteLine("Shutting down.");
+            _subscription?.Dispose();
+            _stateSnapshot?.Dispose();
         }
     }
 }

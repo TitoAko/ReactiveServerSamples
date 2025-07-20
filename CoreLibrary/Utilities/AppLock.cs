@@ -3,15 +3,19 @@ using System.Threading;
 
 namespace CoreLibrary.Utilities
 {
+    /// <summary>
+    /// Ensures single-instance enforcement based on a combination of user and app configuration.
+    /// </summary>
     public class AppLock : IDisposable
     {
         private Mutex? _mutex;
         private bool _lockAcquired;
 
         /// <summary>
-        /// Attempts to acquire a mutex based on the configuration.
-        /// Returns true if this is the first instance running.
+        /// Attempts to acquire a named mutex lock based on user/IP/port/app type.
         /// </summary>
+        /// <param name="config">App configuration containing unique instance identifiers.</param>
+        /// <returns>True if another instance is already running; otherwise, false.</returns>
         public bool IsInstanceRunning(Configuration config)
         {
             string mutexName = $"AppLock_{config.Username}_{config.IpAddress}_{config.Port}_{config.AppType}";
@@ -23,7 +27,7 @@ namespace CoreLibrary.Utilities
         }
 
         /// <summary>
-        /// Releases the lock only if acquired by this instance.
+        /// Releases the acquired mutex if it belongs to this instance.
         /// </summary>
         public void ReleaseLock()
         {
@@ -46,6 +50,9 @@ namespace CoreLibrary.Utilities
             }
         }
 
+        /// <summary>
+        /// Automatically releases the mutex during cleanup.
+        /// </summary>
         public void Dispose()
         {
             ReleaseLock(); // Auto-clean if forgotten

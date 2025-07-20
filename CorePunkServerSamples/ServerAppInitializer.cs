@@ -4,6 +4,9 @@ using CoreLibrary.Utilities;
 
 namespace ServerApp
 {
+    /// <summary>
+    /// Responsible for initializing the server, including config loading, locking, and starting communication observables.
+    /// </summary>
     public class ServerAppInitializer
     {
         private readonly Configuration _config;
@@ -11,6 +14,9 @@ namespace ServerApp
         private readonly ICommunicator _communicator;
         private CancellationTokenSource _cancellationTokenSource = new();
 
+        /// <summary>
+        /// Initializes configuration, communication system, and app locking.
+        /// </summary>
         public ServerAppInitializer()
         {
             _config = new Configuration("launchSettings.json");  // Use Configuration to hold all the parameters
@@ -18,6 +24,9 @@ namespace ServerApp
             _communicator = CommunicatorFactory.Create(_config);
         }
 
+        /// <summary>
+        /// Performs the main server setup logic and starts message listening.
+        /// </summary>
         public void InitializeServer()
         {
             // Using ClientLock to check if the server is already running
@@ -33,11 +42,17 @@ namespace ServerApp
             StartObservables();
         }
 
+        /// <summary>
+        /// Releases the instance lock to allow another server instance to start.
+        /// </summary>
         public void ReleaseLock()
         {
             _appLock.ReleaseLock();  // Release the lock after the server finishes
         }
 
+        /// <summary>
+        /// Starts the reactive observables and message handling logic.
+        /// </summary>
         public void StartObservables()
         {
             Console.WriteLine($"UDP server is listening on port {_config.Port}...");
