@@ -15,15 +15,15 @@ Focus is placed on:
 
 ## ✅ Progress Table
 
-| ✅ | Module Name           | Target Class        | Key Tests                                                           | Status       |
-|----|------------------------|----------------------|----------------------------------------------------------------------|--------------|
+| ✅ | Module Name            | Target Class         | Key Tests                                                           | Status          |
+|----|------------------------|----------------------|---------------------------------------------------------------------|-----------------|
 | ✅ | Client Events          | `ClientHandler`      | Event triggers: `OnConnect`, `OnDisconnect`, `OnMessageReceived`    | ✅ Done         |
 | ✅ | AppLock Check          | `AppLock`            | Prevents multiple instances on same config                          | ✅ Done         |
 | ✅ | Input Parsing          | `InputHandler`       | Interprets raw console input into commands or messages              | ✅ Done         |
 | ✅ | Packet Trigger         | `UdpReceiver`        | StartObservables, deserialization, and observable emission          | ✅ Done         |
 | ✅ | Disposal Guard (UDP)   | `UdpCommunicator`    | Ensure client not disposed during/after send/receive                | ✅ Done         |
-| ⬜ | Config Loader          | `Configuration`      | Loads from file, fallback to defaults                               | Optional          |
-| ⬜ | Message Format         | `Message`            | Structure, sender, message type correctness                         | Optional          |
+| ✅ | Config Loader          | `Configuration`      | Loads from file, fallback to defaults                               | ✅ Done         |
+| ✅ | Message Format         | `Message`            | Structure, sender, message type correctness                         | ✅ Done         |
 
 ---
 
@@ -36,4 +36,4 @@ Focus is placed on:
 ---
 
 ## 🔄 Last Updated
-`{{ 18/07/2025 }}`
+`{{ 20/07/2025 }}`

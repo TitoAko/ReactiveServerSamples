@@ -1,7 +1,6 @@
-﻿using System;
-using CoreLibrary.Handlers;
+﻿using CoreLibrary.Handlers;
 using CoreLibrary.Messaging;
-using Xunit;
+using MessageTypes = CoreLibrary.Messaging.MessageTypes;
 
 namespace CoreLibrary.Tests.Handlers
 {
@@ -13,7 +12,7 @@ namespace CoreLibrary.Tests.Handlers
             // Arrange
             var handler = new ClientHandler();
             var wasCalled = false;
-            var message = new Message("TestUser", "Hello!", new Messaging.MessageTypes.TextMessage());
+            var message = new Message("TestUser", "Hello!", new MessageTypes.TextMessage());
 
             handler.OnMessageReceived += (msg) =>
             {

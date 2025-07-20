@@ -1,5 +1,6 @@
 ﻿using CoreLibrary.Communication.UdpCommunication;
 using CoreLibrary.Messaging;
+using MessageTypes = CoreLibrary.Messaging.MessageTypes;
 using CoreLibrary.Utilities;
 using Microsoft.Extensions.Configuration;
 using System.Net;
@@ -49,7 +50,7 @@ namespace CoreLibrary.Tests.Communication
         {
             var receiver = new UdpReceiver(_config);
             Message? received = null;
-            var message = new Message("TestUser", "Hello!", new Messaging.MessageTypes.TextMessage());
+            var message = new Message("TestUser", "Hello!", new MessageTypes.TextMessage());
             var bytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message));
 
             receiver.OnMessageReceived += msg => { received = msg; };
