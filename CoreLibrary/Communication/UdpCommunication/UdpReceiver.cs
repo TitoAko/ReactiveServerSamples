@@ -1,124 +1,71 @@
-﻿using CoreLibrary.Interfaces;
-using CoreLibrary.Messaging;
-using CoreLibrary.Messaging.MessageTypes;
+﻿using CoreLibrary.Messaging;
 using CoreLibrary.Utilities;
+using System.Net;
 using System.Net.Sockets;
-using System.Reactive.Linq;
 using System.Text;
 using System.Text.Json;
 
 namespace CoreLibrary.Communication.UdpCommunication
 {
     /// <summary>
-    /// Handles receiving UDP packets, exposing an observable stream of messages.
+    /// Listens for UDP datagrams and raises <see cref="MessageReceived"/>.
     /// </summary>
-    public class UdpReceiver
+    public class UdpReceiver : IDisposable
     {
         private readonly UdpClient _udpClient;
-        private readonly Configuration _config;
-        private readonly IMessageProcessor? _messageProcessor;
-        private IDisposable? _subscription;
-        private IDisposable? _stateSnapshot;
+        private readonly JsonSerializerOptions _jsonOptions;
 
         /// <summary>
         /// Fired when a valid message is received and parsed.
         /// </summary>
-        public event Action<Message>? OnMessageReceived;
+        public event EventHandler<Message>? MessageReceived;
 
         /// <summary>
         /// Initializes the UDP receiver and prepares it for asynchronous listening.
         /// </summary>
-        public UdpReceiver(Configuration configuration, IMessageProcessor? messageProcessor = null)
+        public UdpReceiver(Configuration configuration)
         {
-            _config = configuration;
-            _udpClient = new UdpClient(_config.Port);
-            _messageProcessor = messageProcessor;
-        }
+            var local = new IPEndPoint(
+                IPAddress.Parse(configuration.IpAddress),
+                configuration.Port);
 
-        /// <summary>
-        /// Starts the reactive observables to receive and deserialize messages.
-        /// </summary>
-        public void StartObservables(CancellationToken cancellationToken)
-        {
-            Console.WriteLine("Rx observables starting...");
+            _udpClient = new UdpClient(local);
 
-            var packetStream = Observable.Create<byte[]>(async (observer, ct) =>
+            _jsonOptions = new JsonSerializerOptions
             {
-                while (!ct.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
-                {
-                    try
-                    {
-                        UdpReceiveResult result = await _udpClient.ReceiveAsync(ct);
-                        observer.OnNext(result.Buffer);
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        observer.OnCompleted();
-                        break;
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"Receive failed: {ex.Message}");
-                        observer.OnError(ex);
-                        break;
-                    }
-                }
-            });
-
-            _subscription = packetStream
-                .Where(buf => buf.Length > 0)
-                .Select(buf => Encoding.UTF8.GetString(buf))
-                .Throttle(TimeSpan.FromMilliseconds(100))
-                .Subscribe(
-                    async payload =>
-                    {
-                        try
-                        {
-                            var message = JsonSerializer.Deserialize<Message>(payload, new JsonSerializerOptions
-                            {
-                                PropertyNameCaseInsensitive = true,
-                                AllowTrailingCommas = true,
-                                Converters = { new MessageTypeConverter() }
-                            });
-
-                            if (message is not null)
-                            {
-                                OnMessageReceived?.Invoke(message);
-                                if (_messageProcessor != null)
-                                    await _messageProcessor.ProcessAsync(message);
-                            }
-                        }
-                        catch (JsonException ex)
-                        {
-                            Console.Error.WriteLine($"Failed to deserialize message: {ex.Message}");
-                        }
-                    },
-                    ex => Console.Error.WriteLine($"Stream error: {ex.Message}"),
-                    () => Console.WriteLine("Stream completed.")
-                );
-
-            var ticker = Observable.Interval(TimeSpan.FromSeconds(1));
-
-            _stateSnapshot = ticker
-                .CombineLatest(packetStream.StartWith(Array.Empty<byte[]>()),
-                    (tick, latestPacket) => new { Time = tick, Packet = latestPacket })
-                .Subscribe(tick =>
-                {
-                    Console.WriteLine($"Tick {tick.Time}, last packet size: {tick.Packet.Length}");
-                });
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                Converters = { new MessageTypeConverter() }
+            };
         }
 
         /// <summary>
-        /// Stops the receiver and disposes observables.
+        /// Starts the infinite read loop. Call once, ideally from a background Task.
         /// </summary>
-        public void Stop()
+        public async Task ListenAsync(CancellationToken cancellationToken = default)
         {
-            Console.WriteLine("Stopping UdpReceiver");
-            _subscription?.Dispose();
-            _subscription = null;
-            _stateSnapshot?.Dispose();
-            _stateSnapshot = null;
-            _udpClient.Close();
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                try
+                {
+                    UdpReceiveResult result =
+                        await _udpClient.ReceiveAsync(cancellationToken).ConfigureAwait(false);
+
+                    string json = Encoding.UTF8.GetString(result.Buffer);
+                    var message = JsonSerializer.Deserialize<Message>(json, _jsonOptions);
+
+                    if (message is not null)
+                        MessageReceived?.Invoke(this, message);
+                }
+                catch (OperationCanceledException)
+                {
+                    // normal shutdown, swallow silently
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"UDP receive error: {ex}");
+                    // optional: raise an error event so the app can decide what to do
+                }
+            }
         }
 
         /// <summary>
@@ -126,26 +73,7 @@ namespace CoreLibrary.Communication.UdpCommunication
         /// </summary>
         public void Dispose()
         {
-            Stop();
             _udpClient.Dispose();
-        }
-
-        /// <summary>
-        /// Returns a test message. Only used for diagnostics or placeholder behavior.
-        /// </summary>
-        public Message ReceiveMessage()
-        {
-            return new Message("Server", "Test message", new TextMessage());
-        }
-
-        /// <summary>
-        /// Disposes internal observables.
-        /// </summary>
-        public void DisposeResources()
-        {
-            Console.WriteLine("Shutting down.");
-            _subscription?.Dispose();
-            _stateSnapshot?.Dispose();
         }
     }
 }

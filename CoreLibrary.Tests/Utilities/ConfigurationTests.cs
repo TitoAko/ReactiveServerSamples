@@ -1,56 +1,34 @@
-﻿using CoreLibrary.Utilities;
-using Microsoft.Extensions.Configuration;
+﻿using CoreLibrary.Tests.TestInfrastructure;
+using CoreLibrary.Utilities;
 
 namespace CoreLibrary.Tests.Utilities
 {
     public class ConfigurationTests
     {
-        private IConfigurationRoot CreateInMemoryConfig(Dictionary<string, string?> values)
+        [Fact]
+        public void IsEndpointBusy_ReturnsFalse_WhenPortFree()
         {
-            return new ConfigurationBuilder()
-                .AddInMemoryCollection(values!)
-                .Build();
+            var cfg = new Configuration { IpAddress = "127.0.0.1", Port = PortFinder.FreePort() };
+            Assert.False(cfg.IsEndpointBusy());
         }
 
         [Fact]
-        public void ShouldLoadAllValuesFromConfig()
+        public void IsEndpointBusy_ReturnsTrue_WhenPortBound()
         {
-            var values = new Dictionary<string, string?>
-            {
-                ["AppConfig:Username"] = "Alice",
-                ["AppConfig:Password"] = "secret",
-                ["AppConfig:IpAddress"] = "127.0.0.1",
-                ["AppConfig:Port"] = "9000",
-                ["AppConfig:Communicator"] = "UdpCommunicator",
-                ["AppConfig:AppType"] = "Client"
-            };
+            int port = PortFinder.FreePort();
+            using var tcp = new System.Net.Sockets.TcpListener(System.Net.IPAddress.Loopback, port);
+            tcp.Start();
 
-            var config = new Configuration(CreateInMemoryConfig(values));
-
-            Assert.Equal("Alice", config.Username);
-            Assert.Equal("secret", config.Password);
-            Assert.Equal("127.0.0.1", config.IpAddress);
-            Assert.Equal(9000, config.Port);
-            Assert.Equal("UdpCommunicator", config.Communicator);
-            Assert.Equal("Client", config.AppType);
+            var cfg = new Configuration { IpAddress = "127.0.0.1", Port = port };
+            Assert.True(cfg.IsEndpointBusy());
         }
 
         [Fact]
-        public void ShouldThrowIfAppTypeIsMissing()
+        public void ClientId_Unique_ByDefault()
         {
-            var values = new Dictionary<string, string?>
-            {
-                ["AppConfig:Username"] = "Bob",
-                ["AppConfig:Password"] = "pass",
-                ["AppConfig:IpAddress"] = "localhost",
-                ["AppConfig:Port"] = "9001",
-                ["AppConfig:Communicator"] = "TcpCommunicator"
-                // AppType is missing!
-            };
-
-            var configData = CreateInMemoryConfig(values);
-
-            Assert.Throws<InvalidOperationException>(() => new Configuration(configData));
+            var a = new Configuration();
+            var b = new Configuration();
+            Assert.NotEqual(a.ClientId, b.ClientId);
         }
     }
 }

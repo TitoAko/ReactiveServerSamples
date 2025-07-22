@@ -1,25 +1,34 @@
 ﻿using CoreLibrary.Messaging;
 using CoreLibrary.Utilities;
+using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Text.Json;
 
 namespace CoreLibrary.Communication.UdpCommunication
 {
     /// <summary>
     /// Handles sending serialized messages over UDP.
     /// </summary>
-    public class UdpSender
+    public class UdpSender : IDisposable
     {
         private readonly UdpClient _udpClient;
-        private readonly Configuration _configuration;
+        private readonly IPEndPoint _remoteEndPoint;
+        private readonly JsonSerializerOptions _jsonSerializerOptions;
 
         /// <summary>
         /// Initializes a new instance of the sender with the given config.
         /// </summary>
-        public UdpSender(Configuration configuration)
+        public UdpSender(Configuration cfg, int remotePort)
         {
-            _configuration = configuration;
             _udpClient = new UdpClient();
+            _remoteEndPoint = new IPEndPoint(IPAddress.Parse(cfg.IpAddress), remotePort);
+
+            _jsonSerializerOptions = new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase, // <- matches receiver
+                Converters = { new MessageTypeConverter() } // <- enum ↔ string
+            };
         }
 
         /// <summary>
@@ -29,21 +38,23 @@ namespace CoreLibrary.Communication.UdpCommunication
         /// <param name="cancellationToken">Token for graceful cancellation.</param>
         public async Task SendMessageAsync(Message message, CancellationToken cancellationToken = default)
         {
-            byte[] messageBytes = Encoding.ASCII.GetBytes(message.Content);
+            if (buffer.Length > 60_000)
+                throw new ArgumentException("UDP payload exceeds 60 kB.");
 
-            if (cancellationToken.IsCancellationRequested)
+            string json = JsonSerializer.Serialize(message, _jsonSerializerOptions);
+
+            byte[] buffer = Encoding.UTF8.GetBytes(json);
+
+            await _udpClient.SendAsync(buffer.AsMemory(),
+                                                    _remoteEndPoint,
+                                                    cancellationToken)
+                                        .ConfigureAwait(false); if (cancellationToken.IsCancellationRequested)
                 return;
-
-            await _udpClient.SendAsync(messageBytes, messageBytes.Length, _configuration.IpAddress, _configuration.Port)
-                .ConfigureAwait(false);
         }
 
         /// <summary>
         /// Disposes the underlying UDP client.
         /// </summary>
-        public void Dispose()
-        {
-            _udpClient.Dispose();
-        }
+        public void Dispose() => _udpClient.Dispose();
     }
 }

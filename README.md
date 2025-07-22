@@ -1,116 +1,127 @@
-# 💬 CorePunk Chat System
+# 💬 CorePunk Chat System — 2025 edition
 
-A modular, event-driven client-server chat application built with **.NET 8**, featuring **UDP/TCP support**, **Rx.NET observables**, and clean architectural principles (including **SOLID** and **interface-driven design**).
-
-This project is designed to showcase real-world software engineering skills in areas such as networking, multithreading, configurability, and extensibility.
-
----
-
-## 📦 Features
-
-- ✅ Configurable communication layer (UDP or TCP via config or environment)
-- ✅ Rx.NET-based observables for real-time message/event streaming
-- ✅ CancellationToken support for safe async operations and shutdown
-- ✅ Interfaces for communication (`ICommunicator`, `IClient`, etc.)
-- ✅ `CommunicatorFactory` for dynamic instantiation via reflection
-- ✅ Testable core modules with separation of concerns
-- ✅ Optional Docker support and cross-platform readiness
+A modular, **.NET 8** client–server chat written to demonstrate modern
+networking, async/await, test-driven refactor and clean design.
 
 ---
 
-## 🧱 Architecture Overview
+## ✨ Highlights
+
+| Area | What you’ll find |
+|------|------------------|
+| **Pluggable transport** | UDP implemented, TCP stub in place – pick via `Configuration.TransportKind`. |
+| **Async-first API** | Single `ICommunicator` interface (`StartAsync`, `SendMessageAsync`, `MessageReceived`). |
+| **Clean DTO model** | One `Message` class + `MessageType` enum → no runtime reflection. |
+| **Enum-switch factory** | `CommunicatorFactory` chooses transport without reflection overhead. |
+| **Graceful shutdown** | Everywhere uses `CancellationToken` + `Dispose`. |
+| **Solid tests** | 11 passing xUnit tests covering serialization, factory, utilities and UDP e2e. |
+| **Docker-ready** | Multi-stage Dockerfiles (build ➜ runtime) for client & server. |
+| **Extensible** | Add WebSockets/SignalR or a GUI without touching core logic. |
+
+---
+
+## 🏗️ Architecture (high level)
 
 ```text
-                   +------------------------+
-                   |     ServerApp          |
-                   |------------------------|
-                   | - ServerAppInitializer |
-                   | - ChatServer           |
-                   +------------------------+
-                           |
-                           v
-               +------------------------+
-               |  ICommunicator (UDP/TCP) |
-               +------------------------+
-                           ^
-                           |
-                   +------------------------+
-                   |     ClientApp          |
-                   |------------------------|
-                   | - ClientAppInitializer |
-                   | - ChatClient           |
-                   +------------------------+
+          +------------------------+
+          |     ServerApp          |
+          |------------------------|
+          | ServerAppInitializer   |
+          | ChatServer             |--+
+          +------------------------+  |
+                   ▲                  |
+                   | Event            |
+          +------------------------+  | 1..*
+          |   ClientConnection     |--+
+          +------------------------+
+                   ▲    ▲
+                   |    | ICommunicator (UDP/TCP)
++------------------+    |
+|     ClientApp     |   |
+|-------------------|   |
+| ChatClient        |---+
+| Input / Output    |
++-------------------+
 ```
 
-Shared Libraries:
-- CoreLibrary.Interfaces (`IClient`, `ICommunicator`, `IMessageProcessor`)
-- CoreLibrary.Messaging (`Message`, `MessageTypes`)
-- CoreLibrary.Communication (`UdpCommunicator`, `TcpCommunicator`)
+### Shared library outline
+
+```
+CoreLibrary
+ ├─ Communication/
+ │    ├─ UdpCommunication/
+ │    │     ├─ UdpSender / UdpReceiver / UdpCommunicator
+ │    └─ TcpCommunicator   (minimal stub; TODO)
+ │
+ ├─ Messaging/    Message, MessageType, Json converter
+ ├─ Utilities/    Configuration, Port helpers, etc.
+ ├─ Factories/    CommunicatorFactory
+ └─ IO/           InputHandler, OutputHandler
+```
+
+Legacy folders (`Interfaces/`, `MessageTypes/`, reflection factory) have
+been archived.
 
 ---
 
-## ⚙️ How to Run
+## ⏯️ Running locally
 
-🖥️ Local (Visual Studio or CLI)
+```bash
+# 1  build everything
+dotnet build
 
-Build the solution.
+# 2  start server (default UDP 9000)
+dotnet run --project ServerApp
 
-Run ServerApp first.
+# 3  in another terminal start a client
+dotnet run --project ClientApp 127.0.0.1 9000
+```
 
-Run one or more instances of ClientApp.
+`ClientId` is random by default; pass `--name Alice` if you prefer.
 
-Enter a username and start chatting.
-
-## 🐳 Docker (Planned)
-🛠️ Docker support is in progress.
-
-Planned structure:
 ---
-docker-compose up --build
 
-Will run both ServerApp and one or more clients in separate containers.
+## 🐳 Docker (quick demo)
 
-📁 Folder Structure
-```text
-CoreLibrary/
-  └─ Communication/          # UdpCommunicator, TcpCommunicator
-  └─ Handlers/               # ClientHandler, UserManager
-  └─ Interfaces/             # IClient, ICommunicator, IMessageProcessor, etc.
-  └─ Messaging/              # Message types and helpers
-  └─ Utilities/              # LoggingService, AppLock, Config, Auth
+```bash
+docker compose up --build
+```
 
-ClientApp/
-  └─ ClientAppInitializer.cs
-  └─ ChatClient.cs
-  └─ InputHandler.cs
-  └─ OutputHandler.cs
+*Work in progress*: compose spins up one server + one client for smoke
+testing. Add more client services or expose ports as needed.
 
-ServerApp/
-  └─ ServerAppInitializer.cs
-  └─ ChatServer.cs
+---
 
-Factories/
-  └─ CommunicatorFactory.cs
-  ```
-## 🧪 Testing (Planned)
- Unit tests for ClientHandler, Message, AppLock, UdpReceiver
+## 🧪 Testing
 
- Integration test for ChatServer and broadcast handling
+*Project:* **CoreLibrary.Tests**  
+*Framework:* xUnit + Coverlet
 
- Mocked communicator for client testing
+| Bucket | Tests |
+|--------|-------|
+| Utilities | `Configuration.IsEndpointBusy`, unique `ClientId` |
+| Messaging | JSON round-trip, enum converter |
+| Factory | Correct transport chosen, throws on bad enum |
+| UDP Integration | single chat, exit, order preservation |
 
-## 🔄 TODO & Improvements
- Finish TCP implementation
+```bash
+dotnet test --collect:"XPlat Code Coverage"
+```
 
- Add unit tests to CoreLibrary
+Coverage target: **≥ 70 %** (badge script in CI).
 
- Add XML documentation across interfaces
+---
 
- Finalize Docker + Docker Compose support
+## 🔮 Roadmap
 
- Include WebSocket support (optional extension)
+- [ ] Flesh-out **TcpCommunicator** (sender / receiver)
+- [ ] Add **WebSocket** transport (SignalR)
+- [ ] Interactive **Blazor** or **MAUI** front-end
+- [ ] Docker-Compose-based integration tests in CI
+- [ ] TLS & authentication (optional)
 
- Add UI front-end (optional)
+---
 
-## 📜 License
-MIT — free to use, share, and modify.
+## 📝 License
+
+MIT – free to use, modify, and share.

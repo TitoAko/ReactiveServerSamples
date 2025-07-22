@@ -1,43 +1,42 @@
-﻿using CoreLibrary.Interfaces;
+﻿using CoreLibrary.Factories;
 using CoreLibrary.Messaging;
+using CoreLibrary.Utilities;
+using ServerApp.Models;
 
-namespace ServerApp
+namespace ServerApp;
+
+/// <summary>
+/// Accepts new communicators, wires them into ClientConnections, and
+/// broadcasts messages to everyone else.
+/// </summary>
+public sealed class ChatServer
 {
-    /// <summary>
-    /// Handles message processing and broadcasting to connected clients.
-    /// </summary>
-    public class ChatServer : IBroadcastMessage, IMessageProcessor
+    private readonly UserManager _users = new();
+
+    public async Task AddClientAsync(Configuration cfg)
     {
-        private readonly UserManager _userManager;
+        var comm = CommunicatorFactory.Create(cfg);
+        var conn = new ClientConnection(comm);
+        _users.Add(conn);
 
-        /// <summary>
-        /// Initializes the chat server with a user manager.
-        /// </summary>
-        public ChatServer(UserManager userManager)
+        conn.Received += (_, m) => OnMessage(conn, m);
+
+        await conn.StartAsync();
+    }
+
+    private async void OnMessage(ClientConnection sender, Message m)
+    {
+        if (m.Type == MessageType.Exit)
         {
-            _userManager = userManager;
+            _users.Remove(sender.Id);
+            return;
         }
 
-        /// <summary>
-        /// Processes incoming messages and broadcasts them to all clients.
-        /// </summary>
-        public async Task ProcessAsync(Message message)
+        // broadcast
+        foreach (var other in _users.All.Where(c => c.Id != sender.Id))
         {
-            Console.WriteLine($"[Server] Processing from {message.Sender}: {message.Content}");
-            BroadcastMessage(message);
-            await Task.CompletedTask;
-        }
-
-        /// <summary>
-        /// Sends the given message to all connected clients.
-        /// </summary>
-        public void BroadcastMessage(Message message)
-        {
-            // Send a message to all connected clients
-            foreach (var client in _userManager.GetAllClients())
-            {
-                client.SendMessage(message);
-            }
+            try { await other.SendAsync(m); }
+            catch { /* swallow for now; cleanup on future exit */ }
         }
     }
 }

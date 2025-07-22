@@ -1,35 +1,25 @@
 ﻿using CoreLibrary.Messaging;
 
-namespace CoreLibrary.Interfaces
+/// <summary>
+/// Transport‑agnostic contract for chat traffic.
+/// </summary>
+public interface ICommunicator : IDisposable
 {
     /// <summary>
-    /// Defines a standard communication contract for network-based message exchange.
+    /// Sends <paramref name="message"/> asynchronously.
     /// </summary>
-    public interface ICommunicator : IDisposable
-    {
-        /// <summary>
-        /// Sends a structured message to the connected target.
-        /// </summary>
-        /// <param name="message">The message object containing sender, content, and type.</param>
-        Task SendMessage(Message message, CancellationToken cancellationToken = default);
-        /// <summary>
-        /// Receives a message from the connected source.
-        /// </summary>
-        /// <returns>A Message instance representing the received data.</returns>
-        Message ReceiveMessage();
-        /// <summary>
-        /// Begins listening for incoming messages using the provided cancellation token.
-        /// </summary>
-        /// <param name="cancellationToken">Token used to cancel the listening operation.</param>
-        void StartListening(CancellationToken cancellationToken);
-        /// <summary>
-        /// Stops any ongoing listening or communication activity.
-        /// </summary>
-        void Stop();
-        /// <summary>
-        /// Establishes a connection and optionally performs a handshake or introduction message.
-        /// </summary>
-        /// <param name="cancellationToken">Token used to cancel the connection attempt.</param>
-        void Connect(CancellationToken cancellationToken);
-    }
+    /// <param name="message">Message that's being sent</param>
+    /// <param name="cancellationToken">Optional, token to end waiting for messages to be sent.</param>
+    /// <returns></returns>
+    Task SendMessageAsync(Message message,
+                          CancellationToken cancellationToken = default);
+
+    /// <summary>Push stream of inbound messages.</summary>
+    event EventHandler<Message>? MessageReceived;
+
+    /// <summary>
+    /// Starts the background listen loop.
+    /// </summary>
+    /// <param name="cancellationToken">Optional, token to end the background listen loop.</param>
+    Task StartAsync(CancellationToken cancellationToken = default);
 }

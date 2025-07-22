@@ -1,0 +1,3 @@
+Hello from Docker!
+How are you today?
+exit

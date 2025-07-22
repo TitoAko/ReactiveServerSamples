@@ -1,14 +1,40 @@
-version: '3.8'
 services:
   corepunkserver:
-    build: ./CorePunkServerSamples
+    build:
+      context: .
+      dockerfile: CorePunkServerSamples/Dockerfile
+    container_name: corepunk-server
+    working_dir: /app
     environment:
-      - APP_TYPE=server
-      - APP_IPADDRESS=0.0.0.0
-      - APP_PORT=8080
-      - APP_USERNAME=admin
-      - APP_PASSWORD=admin123
-      - APP_COMMUNICATOR=UdpCommunicator
-      - APP_LOGLEVEL=Info
+      - AppConfig__AppType=server
+      - AppConfig__IpAddress=0.0.0.0
+      - AppConfig__Port=8080
+      - AppConfig__Username=admin
+      - AppConfig__Password=admin123
+      - AppConfig__Communicator=UdpCommunicator
+      - AppConfig__LogLevel=Info
+      - AppConfig__AppName=CorePunkServerSamples
     ports:
-      - "8080:8080"
+      - "8080:8080/udp"
+    restart: "no"
+
+  corepunkclient:
+    build:
+      context: .
+      dockerfile: CorePunkClientSamples/Dockerfile
+    container_name: corepunk-client
+    working_dir: /app
+    environment:
+      - AppConfig__AppType=client
+      - AppConfig__IpAddress=corepunkserver
+      - AppConfig__Port=8080
+      - AppConfig__Username=testuser
+      - AppConfig__Password=secret
+      - AppConfig__Communicator=UdpCommunicator
+      - AppConfig__LogLevel=Info
+      - AppConfig__AppName=CorePunkServerSamples
+    depends_on:
+      - corepunkserver
+    volumes:
+      - ./input.txt:/app/input.txt
+    restart: unless-stopped

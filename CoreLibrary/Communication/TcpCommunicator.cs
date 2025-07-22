@@ -1,134 +1,130 @@
-﻿using CoreLibrary.Interfaces;
-using CoreLibrary.Messaging;
-using CoreLibrary.Messaging.MessageTypes;
+﻿using CoreLibrary.Messaging;
+using CoreLibrary.Utilities;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Text.Json;
 
-namespace CoreLibrary.Communication.TcpCommunication
+namespace CoreLibrary.Communication
 {
-    // TODO: Split into TcpSender / TcpReceiver classes if TCP support is expanded or tested
-    public class TcpCommunicator : ICommunicator
+    /// <summary>
+    /// Minimal TCP transport. Listens on the configured port and relays JSON
+    /// chat packets.  Useful for smoke tests; production TODOs marked.
+    /// </summary>
+    public sealed class TcpCommunicator : ICommunicator
     {
-        private readonly TcpListener _tcpListener;
-        private readonly int _port;
-        private readonly string _ipAddress;
+        private readonly TcpListener _listener;
+        private readonly Configuration _cfg;
+        private readonly CancellationTokenSource _cts = new();
 
-        private CancellationTokenSource? _internalCts;
-        private TcpClient? _connectedClient;
+        private TcpClient? _client;
 
-        public event Action<Message>? OnMessageReceived;
+        public event EventHandler<Message>? MessageReceived;
 
-        public TcpCommunicator(string ipAddress, int port)
+        public TcpCommunicator(Configuration cfg)
         {
-            _ipAddress = ipAddress;
-            _port = port;
-            _tcpListener = new TcpListener(IPAddress.Parse(_ipAddress), _port);
+            _cfg = cfg;
+            _listener = new TcpListener(
+                IPAddress.Parse(cfg.IpAddress), cfg.Port);
         }
 
-        public void StartListening(CancellationToken cancellationToken)
+        /* -------------------------------------------------------------- */
+        /* ICommunicator                                                  */
+        /* -------------------------------------------------------------- */
+
+        public Task SendMessageAsync(Message message, CancellationToken token = default)
+            => _client is null ? Task.CompletedTask : SendAsyncInternal(message, token);
+
+        public Task StartAsync(CancellationToken token = default)
         {
-            _tcpListener.Start();
-            Console.WriteLine("TCP server is listening...");
+            var linked = CancellationTokenSource.CreateLinkedTokenSource(token, _cts.Token);
 
-            _internalCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            _listener.Start();
+            Console.WriteLine($"[TCP] Listening on {_cfg.IpAddress}:{_cfg.Port}");
 
-            _ = Task.Run(async () =>
-            {
-                while (!_internalCts.Token.IsCancellationRequested)
-                {
-                    try
-                    {
-                        _connectedClient = await _tcpListener.AcceptTcpClientAsync(_internalCts.Token).ConfigureAwait(false);
-                        Console.WriteLine("TCP client connected.");
-
-                        _ = HandleClientAsync(_connectedClient, _internalCts.Token);
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        Console.WriteLine("TCP listening canceled.");
-                        break;
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"TCP listener error: {ex.Message}");
-                    }
-                }
-            }, _internalCts.Token);
-        }
-
-        private async Task HandleClientAsync(TcpClient client, CancellationToken token)
-        {
-            using var stream = client.GetStream();
-            var buffer = new byte[1024];
-
-            while (!token.IsCancellationRequested)
-            {
-                try
-                {
-                    int bytesRead = await stream.ReadAsync(buffer.AsMemory(0, buffer.Length), token).ConfigureAwait(false);
-                    if (bytesRead == 0)
-                        break;
-
-                    string messageContent = Encoding.UTF8.GetString(buffer, 0, bytesRead);
-                    var message = new Message("Client", messageContent, new TextMessage());
-
-                    OnMessageReceived?.Invoke(message);  // Raise event for testing/app logic
-                }
-                catch (OperationCanceledException) { break; }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"TCP client read error: {ex.Message}");
-                    break;
-                }
-            }
-
-            client.Close();
-        }
-
-        public async Task SendMessage(Message message, CancellationToken cancellationToken = default)
-        {
-            if (_connectedClient?.Connected != true)
-            {
-                Console.WriteLine("No TCP client connected.");
-                return;
-            }
-
-            try
-            {
-                var stream = _connectedClient.GetStream();
-                byte[] data = Encoding.UTF8.GetBytes(message.Content);
-
-                await stream.WriteAsync(data, 0, data.Length, cancellationToken).ConfigureAwait(false);
-                Console.WriteLine($"[TCP SEND] {message.Sender}: {message.Content}");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"TCP send failed: {ex.Message}");
-            }
-        }
-
-        public Message ReceiveMessage()
-        {
-            throw new NotSupportedException("Use OnMessageReceived event for TCP.");
-        }
-
-        public void Connect(CancellationToken cancellationToken)
-        {
-            Console.WriteLine("[TCP Client] Connect not implemented.");
-        }
-
-        public void Stop()
-        {
-            _internalCts?.Cancel();
-            _tcpListener.Stop();
-            _connectedClient?.Close();
+            _ = AcceptLoopAsync(linked.Token);   // fire-and-forget
+            return Task.CompletedTask;           // return immediately
         }
 
         public void Dispose()
         {
-            Stop();
-            _tcpListener.Server.Dispose();
+            _cts.Cancel();
+            try { _client?.Close(); } catch { }
+            _listener.Stop();
+        }
+
+        /* -------------------------------------------------------------- */
+        /* Internals                                                      */
+        /* -------------------------------------------------------------- */
+
+        private async Task AcceptLoopAsync(CancellationToken token)
+        {
+            while (!token.IsCancellationRequested)
+            {
+                try
+                {
+                    _client = await _listener.AcceptTcpClientAsync(token)
+                                                .ConfigureAwait(false);
+                    Console.WriteLine("[TCP] Client accepted.");
+                    _ = ReceiveLoopAsync(_client, token);   // detach
+                }
+                catch (OperationCanceledException) { break; }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[TCP] Accept error: {ex.Message}");
+                    await Task.Delay(500, token);
+                }
+            }
+        }
+
+        private async Task ReceiveLoopAsync(TcpClient client, CancellationToken token)
+        {
+            using var reader = new StreamReader(client.GetStream(), Encoding.UTF8);
+            while (!token.IsCancellationRequested)
+            {
+                string? line;
+                try { line = await reader.ReadLineAsync().WaitAsync(token); }
+                catch { break; }
+
+                if (line is null) break;                       // remote closed
+
+                try
+                {
+                    var opts = new JsonSerializerOptions
+                    {
+                        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                        Converters = { new MessageTypeConverter() }
+                    };
+                    var msg = JsonSerializer.Deserialize<Message>(line, opts);
+                    if (msg != null) MessageReceived?.Invoke(this, msg);
+                }
+                catch
+                {
+                    // fallback plain-text -> chat
+                    var fallback = new Message(_cfg.ClientId, line, MessageType.Chat);
+                    MessageReceived?.Invoke(this, fallback);
+                }
+            }
+        }
+
+        private async Task SendAsyncInternal(Message message, CancellationToken token)
+        {
+            try
+            {
+                var opts = new JsonSerializerOptions
+                {
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                    Converters = { new MessageTypeConverter() }
+                };
+                string json = JsonSerializer.Serialize(message, opts) + "\n";
+                byte[] data = Encoding.UTF8.GetBytes(json);
+                await _client!.GetStream().WriteAsync(data.AsMemory(0, data.Length), token)
+                                         .ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[TCP] Send error: {ex.Message}");
+            }
         }
     }
 }

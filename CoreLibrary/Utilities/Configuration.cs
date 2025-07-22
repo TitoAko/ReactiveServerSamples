@@ -1,59 +1,41 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using System.Net;
+using System.Net.Sockets;
 
 namespace CoreLibrary.Utilities
 {
-    /// <summary>
-    /// Loads and validates the application's configuration from appsettings.json and environment variables.
-    /// </summary>
+    /* -------------------- enums -------------------- */
+
+    public enum NodeRole { Server, Client }          // used by new code
+    public enum TransportKind { Udp, Tcp }          //    ”     ”   ”
+    public enum AppType { Server, Client }          // legacy for AppLock
+
+    /* -------------------- POCO --------------------- */
+
     public class Configuration
     {
-        /// <summary>Gets the username for authentication.</summary>
-        public string Username { get; }
+        /* networking */
+        public string IpAddress { get; init; } = "127.0.0.1";
+        public int Port { get; init; } = 9000;
+        public TransportKind Transport { get; init; } = TransportKind.Udp;
 
-        /// <summary>Gets the user password.</summary>
-        public string Password { get; }
+        /* node identity */
+        public NodeRole Role { get; init; } = NodeRole.Client;
+        public string ClientId { get; init; } = $"cli-{Guid.NewGuid():N}";
+        /* ---------- legacy aliases (AppLock, etc.) --------- */
+        public AppType AppType => Role == NodeRole.Server ? AppType.Server : AppType.Client;
+        public string AppName { get; init; } = "CorePunkChat";
+        public string Username => ClientId;
 
-        /// <summary>Gets the IP address to bind or connect to.</summary>
-        public string IpAddress { get; }
-
-        /// <summary>Gets the port used for communication.</summary>
-        public int Port { get; }
-
-        /// <summary>Gets the chosen communication protocol (e.g., UdpCommunicator).</summary>
-        public string Communicator { get; }
-
-        /// <summary>Gets the application type (e.g., Client, Server).</summary>
-        public string AppType { get; }
-
-        /// <summary>
-        /// Initializes configuration from the specified file (defaults to appsettings.json).
-        /// </summary>
-        public Configuration(string configFileName = "appsettings.json")
-                : this(new ConfigurationBuilder()
-                  .SetBasePath(Directory.GetCurrentDirectory())
-                  .AddJsonFile(configFileName, optional: false)
-                  .AddEnvironmentVariables()
-                  .Build())
+        /* ----------------- helpers ------------------ */
+        public bool IsEndpointBusy()
         {
-        }
-
-        /// <summary>
-        /// Initializes configuration from a provided IConfiguration instance (e.g., for testing).
-        /// </summary>
-        public Configuration(IConfiguration config)
-        {
-            var section = config.GetSection("AppConfig");
-
-            Username = section["Username"] ?? throw new InvalidOperationException("Missing Username");
-            Password = section["Password"] ?? throw new InvalidOperationException("Missing Password");
-            IpAddress = section["IpAddress"] ?? throw new InvalidOperationException("Missing IP Address");
-            Communicator = section["Communicator"] ?? throw new InvalidOperationException("Missing Communicator");
-            AppType = section["AppType"] ?? throw new InvalidOperationException("Missing AppType");
-
-            if (!int.TryParse(section["Port"], out var port))
-                throw new InvalidOperationException("Port is missing or invalid in configuration.");
-
-            Port = port;
+            try
+            {
+                using var tcp = new TcpListener(IPAddress.Parse(IpAddress), Port);
+                tcp.Start();
+                return false;   // bind succeeded → port was free
+            }
+            catch (SocketException) { return true; }
         }
     }
 }

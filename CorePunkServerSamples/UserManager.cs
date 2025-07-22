@@ -1,36 +1,29 @@
-﻿using CoreLibrary.Interfaces;
+﻿using ServerApp.Models;
 
-namespace ServerApp
+namespace ServerApp;
+
+/// <summary>Tracks all connected clients in a threadsafe way.</summary>
+public sealed class UserManager
 {
-    /// <summary>
-    /// Manages a list of connected clients on the server.
-    /// </summary>
-    public class UserManager
+    private readonly Dictionary<string, ClientConnection> _clients = new();
+    private readonly object _lock = new();
+
+    public IReadOnlyCollection<ClientConnection> All
     {
-        private readonly List<IClient> _clients = new List<IClient>();
+        get { lock (_lock) return _clients.Values.ToList(); }
+    }
 
-        /// <summary>
-        /// Adds a new client to the user list.
-        /// </summary>
-        public void AddClient(IClient client)
-        {
-            _clients.Add(client);
-        }
+    public void Add(ClientConnection c)
+    {
+        lock (_lock) _clients[c.Id] = c;
+    }
 
-        /// <summary>
-        /// Removes a client from the user list.
-        /// </summary>
-        public void RemoveClient(IClient client)
+    public void Remove(string id)
+    {
+        lock (_lock)
         {
-            _clients.Remove(client);
-        }
-
-        /// <summary>
-        /// Retrieves all currently connected clients.
-        /// </summary>
-        public IEnumerable<IClient> GetAllClients()
-        {
-            return _clients;
+            if (_clients.Remove(id, out var c))
+                c.Dispose();
         }
     }
 }

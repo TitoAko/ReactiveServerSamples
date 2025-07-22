@@ -20,6 +20,7 @@
   <ItemGroup>
     <ProjectReference Include="..\CoreLibrary\CoreLibrary.csproj" />
     <ProjectReference Include="..\CorePunkClientSamples\ClientApp.csproj" />
+    <ProjectReference Include="..\CorePunkServerSamples\ServerApp.csproj" />
   </ItemGroup>
 
   <ItemGroup>

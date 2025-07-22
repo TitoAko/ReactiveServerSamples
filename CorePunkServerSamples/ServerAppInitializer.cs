@@ -1,77 +1,44 @@
-﻿using CoreLibrary.Factories;
-using CoreLibrary.Interfaces;
-using CoreLibrary.Utilities;
+﻿using CoreLibrary.Utilities;
+using ServerApp;
 
-namespace ServerApp
+namespace ServerApp;
+
+/// <summary>
+/// Bootstraps the chat server: loads config, spins up a communicator via
+/// <see cref="ChatServer"/>, and handles Ctrl-C shutdown.
+/// </summary>
+public sealed class ServerAppInitializer
 {
-    /// <summary>
-    /// Responsible for initializing the server, including config loading, locking, and starting communication observables.
-    /// </summary>
-    public class ServerAppInitializer
+    private readonly Configuration _cfg;
+    private readonly ChatServer _server = new();
+    private readonly CancellationTokenSource _cts = new();
+
+    public ServerAppInitializer(string? ip = null, int? port = null)
     {
-        private readonly Configuration _config;
-        private readonly AppLock _appLock;
-        private readonly ICommunicator _communicator;
-        private CancellationTokenSource _cancellationTokenSource = new();
-
-        /// <summary>
-        /// Initializes configuration, communication system, and app locking.
-        /// </summary>
-        public ServerAppInitializer()
+        _cfg = new Configuration
         {
-            _config = new Configuration("launchSettings.json");  // Use Configuration to hold all the parameters
-            _appLock = new AppLock();
-            _communicator = CommunicatorFactory.Create(_config);
-        }
+            IpAddress = ip ?? "127.0.0.1",
+            Port = port ?? 9000,
+            Role = NodeRole.Server
+        };
+    }
 
-        /// <summary>
-        /// Performs the main server setup logic and starts message listening.
-        /// </summary>
-        public void InitializeServer()
+    public async Task RunAsync()
+    {
+        Console.WriteLine($"[Server] Starting on UDP {_cfg.IpAddress}:{_cfg.Port}");
+
+        await _server.AddClientAsync(_cfg); // creates UDP listener & waits
+
+        Console.WriteLine("[Server] Press Ctrl-C to exit.");
+        Console.CancelKeyPress += (_, e) =>
         {
-            // Using ClientLock to check if the server is already running
-            if (_appLock.IsInstanceRunning(_config))
-            {
-                Console.WriteLine("The server is already running on this IP/Port.");
-            }
+            e.Cancel = true;
+            _cts.Cancel();
+        };
 
-            // Initialize the server logic here...
-            // Start the server
-            Console.WriteLine("Server is starting...");
+        try { await Task.Delay(-1, _cts.Token); }
+        catch (TaskCanceledException) { /* graceful */ }
 
-            StartObservables();
-        }
-
-        /// <summary>
-        /// Releases the instance lock to allow another server instance to start.
-        /// </summary>
-        public void ReleaseLock()
-        {
-            _appLock.ReleaseLock();  // Release the lock after the server finishes
-        }
-
-        /// <summary>
-        /// Starts the reactive observables and message handling logic.
-        /// </summary>
-        public void StartObservables()
-        {
-            Console.WriteLine($"UDP server is listening on port {_config.Port}...");
-
-            // initialize ChatServer
-            var chatServer = new ChatServer(new UserManager());
-
-            _communicator.StartListening(_cancellationTokenSource.Token); // TODO: add real cancellation
-
-            Console.CancelKeyPress += (s, e) =>
-            {
-                e.Cancel = true;
-                Console.WriteLine("Shutting down.");
-
-                _cancellationTokenSource.Cancel();  // Signal cancellation to observables
-                _communicator.Stop();                // Clean up Rx
-                _communicator.Dispose();             // Final cleanup
-                ReleaseLock();
-            };
-        }
+        Console.WriteLine("[Server] Shutting down.");
     }
 }
