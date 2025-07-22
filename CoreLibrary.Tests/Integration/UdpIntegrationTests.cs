@@ -11,7 +11,6 @@ namespace CoreLibrary.Tests.Integration
         private UdpCommunicator? _a, _b;
         private readonly List<Message> _aReceived = new();
         private readonly List<Message> _bReceived = new();
-        private int _port;
 
         public async Task InitializeAsync()
         {

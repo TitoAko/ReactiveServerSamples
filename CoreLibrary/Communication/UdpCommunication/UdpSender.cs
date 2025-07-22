@@ -38,12 +38,13 @@ namespace CoreLibrary.Communication.UdpCommunication
         /// <param name="cancellationToken">Token for graceful cancellation.</param>
         public async Task SendMessageAsync(Message message, CancellationToken cancellationToken = default)
         {
-            if (buffer.Length > 60_000)
-                throw new ArgumentException("UDP payload exceeds 60 kB.");
 
             string json = JsonSerializer.Serialize(message, _jsonSerializerOptions);
 
             byte[] buffer = Encoding.UTF8.GetBytes(json);
+
+            if (buffer.Length > 60_000)
+                throw new ArgumentException("UDP payload exceeds 60 kB.");
 
             await _udpClient.SendAsync(buffer.AsMemory(),
                                                     _remoteEndPoint,
