@@ -1,3 +1,4 @@
+[![.NET CI](https://github.com/TitoAko/CorePunkChat/actions/workflows/dotnet.yml/badge.svg)](https://github.com/TitoAko/CorePunkChat/actions/workflows/dotnet.yml)
 # 💬 CorePunk Chat System — 2025 edition
 
 A modular, **.NET 8** client–server chat written to demonstrate modern
