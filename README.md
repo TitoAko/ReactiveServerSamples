@@ -86,11 +86,13 @@ dotnet run --project ClientApp 127.0.0.1 9000
 
 ```bash
 docker compose up --build
+# => server binds UDP 9000, two clients auto-connect and exchange chat lines
+# Stop with Ctrl-C
 ```
 
-*Work in progress*: compose spins up one server + one client for smoke
-testing. Add more client services or expose ports as needed.
-
+```bash
+docker compose up --build
+```
 ---
 
 ## 🧪 Testing

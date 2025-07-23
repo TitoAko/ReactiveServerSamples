@@ -1,40 +1,30 @@
-services:
-  corepunkserver:
-    build:
-      context: .
-      dockerfile: CorePunkServerSamples/Dockerfile
-    container_name: corepunk-server
-    working_dir: /app
-    environment:
-      - AppConfig__AppType=server
-      - AppConfig__IpAddress=0.0.0.0
-      - AppConfig__Port=8080
-      - AppConfig__Username=admin
-      - AppConfig__Password=admin123
-      - AppConfig__Communicator=UdpCommunicator
-      - AppConfig__LogLevel=Info
-      - AppConfig__AppName=CorePunkServerSamples
-    ports:
-      - "8080:8080/udp"
-    restart: "no"
+version: "3.9"
 
-  corepunkclient:
+services:
+  server:
     build:
       context: .
-      dockerfile: CorePunkClientSamples/Dockerfile
-    container_name: corepunk-client
-    working_dir: /app
+      dockerfile: ServerApp/Dockerfile
+    container_name: chat-server
     environment:
-      - AppConfig__AppType=client
-      - AppConfig__IpAddress=corepunkserver
-      - AppConfig__Port=8080
-      - AppConfig__Username=testuser
-      - AppConfig__Password=secret
-      - AppConfig__Communicator=UdpCommunicator
-      - AppConfig__LogLevel=Info
-      - AppConfig__AppName=CorePunkServerSamples
-    depends_on:
-      - corepunkserver
-    volumes:
-      - ./input.txt:/app/input.txt
-    restart: unless-stopped
+      - DOTNET_ENVIRONMENT=Production
+    ports:
+      # expose UDP 9000 on host so native clients can connect too
+      - "9000:9000/udp"
+    command: ["dotnet", "ServerApp.dll"]
+
+  client1:
+    build:
+      context: .
+      dockerfile: ClientApp/Dockerfile
+    container_name: chat-client-1
+    depends_on: [server]
+    command: ["dotnet", "ClientApp.dll", "chat-server", "9000"]
+
+  client2:
+    build:
+      context: .
+      dockerfile: ClientApp/Dockerfile
+    container_name: chat-client-2
+    depends_on: [server]
+    command: ["dotnet", "ClientApp.dll", "chat-server", "9000"]

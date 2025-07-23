@@ -1,12 +1,10 @@
-# Build stage
+# -------- build stage --------
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
-COPY ../CoreLibrary ./CoreLibrary
-COPY ./ ./ServerApp
-WORKDIR /src/ServerApp
-RUN dotnet publish -c Release -o /app
+COPY . .
+RUN dotnet publish ServerApp/ServerApp.csproj -c Release -o /app
 
-# Runtime stage
+# -------- runtime stage --------
 FROM mcr.microsoft.com/dotnet/runtime:8.0
 WORKDIR /app
 COPY --from=build /app .
