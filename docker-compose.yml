@@ -4,25 +4,28 @@ services:
       context: .
       dockerfile: CorePunkServerSamples/Dockerfile
     container_name: chat-server
-    environment:
-      - IP_ADDRESS=0.0.0.0
     ports:
-      # expose UDP 9000 on host so native clients can connect too
       - "9000:9000/udp"
-    command: ["dotnet", "ServerApp.dll", "0.0.0.0", "9000"]
+    command: ["dotnet", "ServerApp.dll",
+              "--bind",   "0.0.0.0",
+              "--target", "server",
+              "--port",   "9000"]
 
   client1:
     build:
       context: .
       dockerfile: CorePunkClientSamples/Dockerfile
-    container_name: chat-client-1
     depends_on: [server]
-    command: ["dotnet", "ClientApp.dll", "server", "9000"]
+    container_name: chat-client-1
+    command: ["dotnet", "ClientApp.dll",
+              "--bind",   "0.0.0.0",
+              "--target", "server",
+              "--port",   "9000"]
 
   client2:
     build:
       context: .
       dockerfile: CorePunkClientSamples/Dockerfile
-    container_name: chat-client-2
     depends_on: [server]
+    container_name: chat-client-2
     command: ["dotnet", "ClientApp.dll", "server", "9000"]

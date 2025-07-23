@@ -19,11 +19,17 @@ namespace CoreLibrary.Communication.UdpCommunication
         /// <summary>
         /// Initializes a new instance of the sender with the given config.
         /// </summary>
-        public UdpSender(Configuration cfg, int remotePort)
+        public UdpSender(Configuration cfg, int? remotePort = null)
         {
+            var host = cfg.TargetAddress;
+            if (host == "0.0.0.0" || host == "::0")
+                throw new ArgumentException("Cannot send to an unspecified address", nameof(cfg.TargetAddress));
+
             _udpClient = new UdpClient();
+
             _remoteEndPoint = new IPEndPoint(
-                Dns.GetHostAddresses(cfg.IpAddress).First(), remotePort);
+                Dns.GetHostAddresses(host).First(),     // resolves ‘server’ inside Docker
+                remotePort ?? cfg.Port);
 
             _jsonSerializerOptions = new JsonSerializerOptions
             {

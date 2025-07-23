@@ -15,12 +15,15 @@ public sealed class ServerAppInitializer
 
     public ServerAppInitializer(string[] args)
     {
+        var cli = new Cli(args);           // use any simple CLI parser you like
         _cfg = new Configuration
         {
-            IpAddress = args.Length > 0 ? args[0] : "0.0.0.0",
-            Port = args.Length > 1 && int.TryParse(args[1], out var p) ? p : 9000,
+            BindAddress = cli.Get("--bind", "0.0.0.0"),
+            TargetAddress = cli.Get("--target", "server"),
+            Port = cli.Get("--port", 9000),
             Role = NodeRole.Server
         };
+
     }
 
     public async Task RunAsync()

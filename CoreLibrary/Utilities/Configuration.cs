@@ -14,7 +14,14 @@ namespace CoreLibrary.Utilities
     public class Configuration
     {
         /* networking */
-        public string IpAddress { get; init; } = "127.0.0.1";
+        public string BindAddress { get; init; } = "0.0.0.0";
+        public string TargetAddress { get; init; } = "127.0.0.1";  // or service name
+
+        public string IpAddress
+        {
+            get => TargetAddress;
+            init { TargetAddress = value; }
+        }
         public int Port { get; init; } = 9000;
         public TransportKind Transport { get; init; } = TransportKind.Udp;
 

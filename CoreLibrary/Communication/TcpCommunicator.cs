@@ -40,7 +40,7 @@ namespace CoreLibrary.Communication
             var linked = CancellationTokenSource.CreateLinkedTokenSource(token, _cts.Token);
 
             _listener.Start();
-            Console.WriteLine($"[TCP] Listening on {_cfg.IpAddress}:{_cfg.Port}");
+            Console.WriteLine($"[TCP] Listening on {_cfg.BindAddress}:{_cfg.Port}");
 
             _ = AcceptLoopAsync(linked.Token);   // fire-and-forget
             return Task.CompletedTask;           // return immediately

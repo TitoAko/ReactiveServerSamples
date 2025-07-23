@@ -10,14 +10,15 @@ namespace ClientApp
         /// </summary>
         public static async Task RunAsync(string[] args)
         {
-            // Allow "chat.exe 10.0.0.2 5555"
+            var cli = new Cli(args);           // use any simple CLI parser you like
             var cfg = new Configuration
             {
-                IpAddress = args.Length > 0 ? args[0] : "127.0.0.1",
-                Port = args.Length > 1 && int.TryParse(args[1], out var p) ? p : 9000,
-                ClientId = $"cli-{Guid.NewGuid():N}",          // unique per console
-                Transport = TransportKind.Udp
+                BindAddress = cli.Get("--bind", "0.0.0.0"),
+                TargetAddress = cli.Get("--target", "server"),
+                Port = cli.Get("--port", 9000),
+                Role = NodeRole.Server
             };
+
 
             ICommunicator comm = new UdpCommunicator(cfg);
 
