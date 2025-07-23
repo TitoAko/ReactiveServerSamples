@@ -115,13 +115,16 @@ Coverage target: **≥ 70 %** (badge script in CI).
 
 ---
 
-## 🔮 Roadmap
+## 🚧 Roadmap
 
-- [ ] Flesh-out **TcpCommunicator** (sender / receiver)
-- [ ] Add **WebSocket** transport (SignalR)
-- [ ] Interactive **Blazor** or **MAUI** front-end
-- [ ] Docker-Compose-based integration tests in CI
-- [ ] TLS & authentication (optional)
+| Status | Item                                 | Notes (next up)                    |
+|--------|--------------------------------------|------------------------------------|
+| ✅     | UDP transport (sender / receiver)    | End-to-end tested                  |
+| ✅     | **TCP transport parity**             | Multi-container demo, CI passing   |
+| ⬜     | Raise test coverage > 80 %           | Add handler edge-cases & TCP tests |
+| ⬜     | Docker -compose healthchecks         | Auto-restart on failure            |
+| ⬜     | Optional WebSocket gateway           | Stretch goal                       |
+
 
 ---
 

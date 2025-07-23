@@ -1,4 +1,4 @@
-﻿using CoreLibrary.Communication;
+﻿using CoreLibrary.Communication.TcpCommunication;
 using CoreLibrary.Communication.UdpCommunication;
 using CoreLibrary.Utilities;
 

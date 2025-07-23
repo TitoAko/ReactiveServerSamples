@@ -1,4 +1,4 @@
-﻿using CoreLibrary.Communication;      // TcpCommunicator
+﻿using CoreLibrary.Communication.TcpCommunication;      // TcpCommunicator
 using CoreLibrary.Messaging;
 using CoreLibrary.Tests.TestInfrastructure;
 using CoreLibrary.Utilities;

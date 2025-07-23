@@ -36,4 +36,4 @@ Focus is placed on:
 ---
 
 ## 🔄 Last Updated
-`{{ 20/07/2025 }}`
+` 23/07/2025 `
