@@ -1,3 +1,3 @@
 ﻿using ServerApp;
 
-await new ServerAppInitializer().RunAsync();
+await new ServerAppInitializer(args).RunAsync();

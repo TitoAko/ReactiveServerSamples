@@ -26,7 +26,7 @@ namespace CoreLibrary.Communication.UdpCommunication
         public UdpReceiver(Configuration configuration)
         {
             var local = new IPEndPoint(
-                IPAddress.Parse(configuration.IpAddress),
+                IPAddress.Any,
                 configuration.Port);
 
             _udpClient = new UdpClient(local);

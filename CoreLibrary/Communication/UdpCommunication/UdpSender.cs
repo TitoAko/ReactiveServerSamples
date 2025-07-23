@@ -22,7 +22,8 @@ namespace CoreLibrary.Communication.UdpCommunication
         public UdpSender(Configuration cfg, int remotePort)
         {
             _udpClient = new UdpClient();
-            _remoteEndPoint = new IPEndPoint(IPAddress.Parse(cfg.IpAddress), remotePort);
+            _remoteEndPoint = new IPEndPoint(
+                Dns.GetHostAddresses(cfg.IpAddress).First(), remotePort);
 
             _jsonSerializerOptions = new JsonSerializerOptions
             {

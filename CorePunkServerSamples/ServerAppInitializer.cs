@@ -13,12 +13,12 @@ public sealed class ServerAppInitializer
     private readonly ChatServer _server = new();
     private readonly CancellationTokenSource _cts = new();
 
-    public ServerAppInitializer(string? ip = null, int? port = null)
+    public ServerAppInitializer(string[] args)
     {
         _cfg = new Configuration
         {
-            IpAddress = ip ?? "127.0.0.1",
-            Port = port ?? 9000,
+            IpAddress = args.Length > 0 ? args[0] : "0.0.0.0",
+            Port = args.Length > 1 && int.TryParse(args[1], out var p) ? p : 9000,
             Role = NodeRole.Server
         };
     }
