@@ -1,0 +1,18 @@
+{
+  "profiles": {
+    "CorePunkServerSamples": {
+      "commandName": "Project"
+    }
+  },
+  "AppConfig": {
+    "AppType": "server",
+    "IpAddress": "127.0.0.1",
+    "Port": 8080,
+    "Username": "admin",
+    "Password": "admin123",
+    "Communicator": "UdpCommunicator"
+  },
+  "Logging": {
+    "LogLevel": "Info"
+  }
+}
