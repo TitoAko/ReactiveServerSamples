@@ -751,17 +751,18 @@
           }
         },
         "centralPackageVersions": {
-          "coverlet.collector": "6.0.0",
+          "coverlet.collector": "6.0.4",
+          "FluentAssertions": "8.5.0",
           "Microsoft.Extensions.Configuration": "9.0.6",
           "Microsoft.Extensions.Configuration.EnvironmentVariables": "9.0.6",
           "Microsoft.Extensions.Configuration.FileExtensions": "9.0.6",
           "Microsoft.Extensions.Configuration.Json": "9.0.6",
-          "Microsoft.NET.Test.Sdk": "17.8.0",
+          "Microsoft.NET.Test.Sdk": "17.14.1",
           "Moq": "4.20.72",
           "System.Reactive": "6.0.1",
           "System.Reactive.Linq": "6.0.1",
-          "xunit": "2.5.3",
-          "xunit.runner.visualstudio": "2.5.3"
+          "xunit": "2.9.3",
+          "xunit.runner.visualstudio": "3.1.3"
         },
         "imports": [
           "net461",

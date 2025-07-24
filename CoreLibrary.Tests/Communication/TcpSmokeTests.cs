@@ -13,16 +13,18 @@ namespace CoreLibrary.Tests.Communication
         {
             var cfg = new Configuration
             {
-                IpAddress = "127.0.0.1",
+                BindAddress = "0.0.0.0",
+                TargetAddress = "127.0.0.1",
                 Port = PortFinder.FreePort(),
                 Transport = TransportKind.Tcp
             };
 
-            using var comm = new TcpCommunicator(cfg);
-            _ = comm.StartAsync();               // fire-and-forget, no await needed
+            using var server = new TcpCommunicator(cfg);
+            await server.StartAsync();         // listener bound before Dispose
+            
+            using var client = new TcpCommunicator(cfg);
             await Task.Delay(50);            // give listener a moment
-
-            await comm.SendMessageAsync(new Message("test", "ping"));
+            await client.SendMessageAsync(new Message("test", "ping"));
         }
     }
 }

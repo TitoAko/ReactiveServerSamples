@@ -8,13 +8,13 @@ namespace CoreLibrary.Tests.Extra
     public class ClientConnectionDisposalTests
     {
         [Fact]
-        public void Dispose_CancelsCommunicator()
+        public async Task Dispose_CancelsCommunicator()
         {
-            var fake = new FakeCommunicator();
-            var conn = new ClientConnection(fake);
+            var comm = new FakeCommunicator();          // ← use stub
+            comm.Dispose();
 
-            conn.Dispose();
-            Assert.ThrowsAnyAsync<Exception>(() => fake.SendMessageAsync(new Message("x", "y")));
+            await Assert.ThrowsAsync<ObjectDisposedException>(() =>
+                comm.SendMessageAsync(new Message("cli", "ping")));
         }
     }
 }

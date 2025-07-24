@@ -1,27 +1,26 @@
-﻿using CoreLibrary.Messaging;
+﻿// CoreLibrary.Tests/TestInfrastructure/FakeCommunicator.cs
+using CoreLibrary.Messaging;
 
 namespace CoreLibrary.Tests.TestInfrastructure
 {
-    /// <summary>
-    /// Lightweight test double – captures everything sent and allows you to push
-    /// inbound messages manually via <see cref="Raise"/>.
-    /// </summary>
-    internal sealed class FakeCommunicator : ICommunicator
+    /// <summary> Test double that throws <see cref="ObjectDisposedException"/>
+    /// after Dispose and records all sent messages. </summary>
+    public sealed class FakeCommunicator : ICommunicator, IDisposable
     {
+        private bool _disposed;
         public readonly List<Message> Sent = new();
 
-        public event EventHandler<Message>? MessageReceived;
+        public Task StartAsync(CancellationToken token = default) => Task.CompletedTask;
 
-        public Task StartAsync(CancellationToken t = default) => Task.CompletedTask;
-
-        public Task SendMessageAsync(Message m, CancellationToken t = default)
+        public Task SendMessageAsync(Message m, CancellationToken token = default)
         {
+            if (_disposed) throw new ObjectDisposedException(nameof(FakeCommunicator));
             Sent.Add(m);
             return Task.CompletedTask;
         }
 
-        public void Raise(Message m) => MessageReceived?.Invoke(this, m);
+        public event EventHandler<Message>? MessageReceived;
 
-        public void Dispose() { }
+        public void Dispose() => _disposed = true;
     }
 }

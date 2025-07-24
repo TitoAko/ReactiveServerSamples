@@ -32,7 +32,10 @@ namespace CoreLibrary.Communication.TcpCommunication
             => _sender.SendAsync(m, t);
 
         public Task StartAsync(CancellationToken t = default)
-            => _receiver.ListenAsync(t);
+        {
+            _ = Task.Run(() => _receiver.ListenAsync(t), t); // fire-and-forget
+            return Task.CompletedTask; // no async work needed here
+        }
 
         public void Dispose()
         {
