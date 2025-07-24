@@ -1,39 +1,39 @@
 ﻿# ✅ CoreLibrary Test Coverage Plan
 
-This document tracks unit and integration test coverage goals for the networking chat system.
+This document tracks unit- and integration-test coverage goals for the networking-chat system.
 
 ---
 
-## 🎯 Target Coverage: ~80% of core logic
+## 🎯 Target Coverage: ≥ 80 % of core logic
 
-Focus is placed on:
-- Observable event correctness
-- Lifecycle integrity (e.g., UdpClient not disposed unexpectedly)
-- Key logical units (AppLock, handlers, communicators)
+Focus is placed on
+
+* Observable-event correctness  
+* Lifecycle integrity (e.g. sockets disposed safely)  
+* Key logical units (AppLock, handlers, communicators)
 
 ---
 
 ## ✅ Progress Table
 
-| ✅ | Module Name            | Target Class         | Key Tests                                                           | Status          |
-|----|------------------------|----------------------|---------------------------------------------------------------------|-----------------|
-| ✅ | Client Events          | `ClientHandler`      | Event triggers: `OnConnect`, `OnDisconnect`, `OnMessageReceived`    | ✅ Done         |
-| ✅ | AppLock Check          | `AppLock`            | Prevents multiple instances on same config                          | ✅ Done         |
-| ✅ | Input Parsing          | `InputHandler`       | Interprets raw console input into commands or messages              | ✅ Done         |
-| ✅ | Packet Trigger         | `UdpReceiver`        | StartObservables, deserialization, and observable emission          | ✅ Done         |
-| ✅ | Disposal Guard (UDP)   | `UdpCommunicator`    | Ensure client not disposed during/after send/receive                | ✅ Done         |
-| ✅ | Config Loader          | `Configuration`      | Loads from file, fallback to defaults                               | ✅ Done         |
-| ✅ | Message Format         | `Message`            | Structure, sender, message type correctness                         | ✅ Done         |
+| ✓ | Module            | Target class / area       | Key tests (examples)                                  | Status |
+|---|-------------------|---------------------------|-------------------------------------------------------|--------|
+| ✓ | Configuration     | `Configuration`           | Unique ClientId, default fall-backs                   | Done   |
+| ✓ | App-lock          | `AppLock`                | Mutex prevents 2nd instance                           | Done   |
+| ✓ | Messaging         | `Message`, type converter | JSON round-trip, enum serialization                   | Done   |
+| ✓ | Factory           | `CommunicatorFactory`     | Transport selection, bad-enum guard                  | Done   |
+| ✓ | UDP send/receive  | `UdpSender/Receiver`      | 60 kB cap, order preservation, exit message           | Done   |
+| ✓ | TCP parity        | `TcpSender/Receiver`      | Round-trip chat, dispose smoke-test                   | Done   |
+| ⏳ | Edge-cases        | All transports            | Zero-length payload, half-close, cancellation         | **Planned** |
+| ⏳ | Distributed store | TBD                       | Dynamo/Cosmos CRUD integration tests                  | **Planned** |
 
 ---
 
 ## 📘 Notes
-
-- Edge cases (e.g., disposed UdpClient) may require integration-style tests with mocked behavior or exposed state.
-- Coverage % is not tracked via tooling for now — we aim for practical and visible test verification.
-- `TcpClient` will follow same structure once its support is implemented.
+* Coverage currently ≈ 72 % (see CI badge). Goal is 80 %+ after adding the _Edge-cases_ bucket.  
+* Future modules (Distributed-Store prototype, Payment flow) will add their own test suites.
 
 ---
 
-## 🔄 Last Updated
-` 23/07/2025 `
+## 🔄 Last updated
+`24 / 07 / 2025`
