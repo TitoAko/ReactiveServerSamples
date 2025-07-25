@@ -13,23 +13,25 @@ namespace CoreLibrary.Communication.UdpCommunication
     public class UdpSender : IDisposable
     {
         private readonly UdpClient _udpClient;
-        private readonly IPEndPoint _remoteEndPoint;
         private readonly JsonSerializerOptions _jsonSerializerOptions;
+        private readonly Configuration _cfg;
+        private readonly int _remotePort;
+        private bool _disposed;
+        private bool _connected;
 
         /// <summary>
         /// Initializes a new instance of the sender with the given config.
         /// </summary>
         public UdpSender(Configuration cfg, int? remotePort = null)
         {
+            _cfg = cfg;
+            _remotePort = remotePort ?? cfg.Port;     // ← use other side’s port when supplied
+
             var host = cfg.TargetAddress;
             if (host == "0.0.0.0" || host == "::0")
-                throw new ArgumentException("Cannot send to an unspecified address", nameof(cfg.TargetAddress));
+                throw new ArgumentException("Cannot send to an unspecified address", nameof(_cfg.TargetAddress));
 
             _udpClient = new UdpClient();
-
-            _remoteEndPoint = new IPEndPoint(
-                Dns.GetHostAddresses(host).First(),     // resolves ‘server’ inside Docker
-                remotePort ?? cfg.Port);
 
             _jsonSerializerOptions = new JsonSerializerOptions
             {
@@ -48,6 +50,14 @@ namespace CoreLibrary.Communication.UdpCommunication
             if (message.Content.Length == 0)
                 throw new ArgumentException("Empty payload", nameof(message));
 
+            if (_disposed) throw new ObjectDisposedException(nameof(UdpSender));
+
+            if (!_connected)
+            {
+                _udpClient.Connect(_cfg.TargetAddress, _remotePort);
+                _connected = true;
+            }
+            
             string json = JsonSerializer.Serialize(message, _jsonSerializerOptions);
 
             byte[] buffer = Encoding.UTF8.GetBytes(json);
@@ -55,16 +65,18 @@ namespace CoreLibrary.Communication.UdpCommunication
             if (buffer.Length > 60_000)
                 throw new ArgumentException("UDP payload exceeds 60 kB.");
 
-            await _udpClient.SendAsync(buffer.AsMemory(),
-                                                    _remoteEndPoint,
-                                                    cancellationToken)
-                                        .ConfigureAwait(false); if (cancellationToken.IsCancellationRequested)
-                return;
+            await _udpClient.SendAsync(buffer.AsMemory(), cancellationToken)
+                             .ConfigureAwait(false);   // use connected socket
+            return;
         }
 
         /// <summary>
         /// Disposes the underlying UDP client.
         /// </summary>
-        public void Dispose() => _udpClient.Dispose();
+        public void Dispose()
+        {
+            _disposed = true;
+            _udpClient.Dispose();
+        }
     }
 }

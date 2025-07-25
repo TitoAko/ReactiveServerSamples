@@ -1,11 +1,9 @@
 ﻿using CoreLibrary.Communication.TcpCommunication;      // TcpCommunicator
 using CoreLibrary.Messaging;
 using CoreLibrary.Tests.TestInfrastructure;
-using CoreLibrary.Utilities;
 
 namespace CoreLibrary.Tests.Communication
 {
-
     public class TcpSmokeTests
     {
         [Fact]
@@ -13,11 +11,11 @@ namespace CoreLibrary.Tests.Communication
         {
             var cfg = TestConfig.TcpLoopback(PortFinder.FreePort());
 
-            using var server = new TcpCommunicator(cfg);
-            await server.StartAsync();         // listener bound before Dispose
-            
+            using var comm = new TcpCommunicator(cfg);
+            await comm.StartAsync();         // listener bound before Dispose
+            await comm.Started;
+
             using var client = new TcpCommunicator(cfg);
-            await Task.Delay(50);            // give listener a moment
             await client.SendMessageAsync(new Message("test", "ping"));
         }
     }

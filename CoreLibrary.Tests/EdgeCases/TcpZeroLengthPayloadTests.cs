@@ -1,41 +1,42 @@
 ﻿using CoreLibrary.Communication.TcpCommunication;
 using CoreLibrary.Messaging;
 using CoreLibrary.Tests.TestInfrastructure;
-using CoreLibrary.Utilities;
-using Xunit;
 
-namespace CoreLibrary.Tests.EdgeCases;
-
-public class TcpZeroLengthPayloadTests : IAsyncLifetime
+namespace CoreLibrary.Tests.EdgeCases
 {
-    private TcpCommunicator? _server;
-    private TcpCommunicator? _client;
 
-    public async Task InitializeAsync()
+    public class TcpZeroLengthPayloadTests : IAsyncLifetime
     {
-        var cfg = TestConfig.TcpLoopback(PortFinder.FreePort());
-        _server = new TcpCommunicator(cfg);
-        await _server.StartAsync();
-        _client = new TcpCommunicator(cfg);
-        await _client.StartAsync();
-    }
+        private TcpCommunicator? _server;
+        private TcpCommunicator? _client;
 
-    [Fact]
-    public async Task EmptyMessage_IsRejected()
-    {
-        var cfg = TestConfig.TcpLoopback(PortFinder.FreePort());
-        using var s = new TcpSender(cfg);
+        public async Task InitializeAsync()
+        {
+            var cfg = TestConfig.TcpLoopback(PortFinder.FreePort());
+            _server = new TcpCommunicator(cfg);
+            await _server.StartAsync();
+            await _server.Started;
+            _client = new TcpCommunicator(cfg);
+        }
 
-        var empty = new Message("cli", "");
+        [Fact]
+        public async Task EmptyMessage_IsRejected()
+        {
+            var cfg = TestConfig.TcpLoopback(PortFinder.FreePort());
 
-        await Assert.ThrowsAsync<ArgumentException>(() =>
-            s.SendAsync(empty).TimeoutAfter(TimeSpan.FromSeconds(1)));
-    }
+            using var sender = new TcpSender(cfg);
 
-    public Task DisposeAsync()
-    {
-        _server?.Dispose();
-        _client?.Dispose();
-        return Task.CompletedTask;
+            var empty = new Message("cli", "");
+
+            await Assert.ThrowsAsync<ArgumentException>(() =>
+                sender.SendAsync(empty));
+        }
+
+        public Task DisposeAsync()
+        {
+            _server?.Dispose();
+            _client?.Dispose();
+            return Task.CompletedTask;
+        }
     }
 }

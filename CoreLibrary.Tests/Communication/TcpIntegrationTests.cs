@@ -25,9 +25,8 @@ namespace CoreLibrary.Tests.Communication
         public async Task InitializeAsync()
         {
             await _server.StartAsync();
-            await Task.Delay(50);
+            await _server.Started;
             _client = new TcpCommunicator(_cfg); // reinitialize client after server started
-            await _client.StartAsync();
         }
         public Task DisposeAsync()
         {
@@ -40,7 +39,7 @@ namespace CoreLibrary.Tests.Communication
         public async Task SendAndReceive_SingleChatMessage()
         {
             var msg = new Message("cli", "hello");
-            await _client!.SendMessageAsync(msg);
+            await _client!.SendMessageAsync(msg).TimeoutAfter(TimeSpan.FromSeconds(1));
             await TaskTimeoutExtensions.WaitForMessageAsync<Message>(_received, 1, 1000);
             _received.Single().Content.Should().Be("hello");
         }

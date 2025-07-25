@@ -22,9 +22,16 @@ public sealed class TcpSender : IDisposable
 
     public async Task SendAsync(Message message, CancellationToken token = default)
     {
-        if (_disposed) throw new ObjectDisposedException(nameof(TcpSender));
-        if (message.Content.Length == 0)
-            throw new ArgumentException("Empty payload", nameof(message)); 
+        if (string.IsNullOrEmpty(message.Content))
+        {
+            throw new ArgumentException("Empty payload", nameof(message));
+        }
+
+        if (_disposed)
+        {
+            throw new ObjectDisposedException(nameof(TcpSender));
+        }
+
         if (!_connected)
         {
             _tcp.Connect(_cfg.TargetAddress, _cfg.Port);

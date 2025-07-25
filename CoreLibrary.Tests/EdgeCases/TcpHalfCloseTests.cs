@@ -4,40 +4,42 @@ using CoreLibrary.Utilities;
 using System.Net.Sockets;
 using Xunit;
 
-namespace CoreLibrary.Tests.EdgeCases;
-
-public class TcpHalfCloseTests : IAsyncLifetime
+namespace CoreLibrary.Tests.EdgeCases
 {
-    private TcpCommunicator? _server;
-    private TcpClient? _raw;
-
-    public async Task InitializeAsync()
+    public class TcpHalfCloseTests : IAsyncLifetime
     {
-        var cfg = TestConfig.TcpLoopback(PortFinder.FreePort());
-        _server = new TcpCommunicator(cfg);
-        await _server.StartAsync();
+        private TcpCommunicator? _server;
+        private TcpClient? _raw;
 
-        // raw client socket to simulate half-close
-        _raw = new TcpClient();
-        _raw.Connect("127.0.0.1", cfg.Port);
-    }
+        public async Task InitializeAsync()
+        {
+            var cfg = TestConfig.TcpLoopback(PortFinder.FreePort());
+            _server = new TcpCommunicator(cfg);
+            await _server.StartAsync();
+            await _server.Started;
 
-    [Fact(Timeout = 2000)]
-    public async Task ReadLoop_Exits_On_RemoteClose()
-    {
-        _raw?.Client.Shutdown(SocketShutdown.Send);   // half-close
-        await Task.Delay(100);                       // give server time to read 0 bytes
+            // raw client socket to simulate half-close
+            _raw = new TcpClient();
+            _raw.Connect("127.0.0.1", cfg.Port);
+        }
 
-        // dispose should not hang (listener loop must have exited)
-        var cts = new CancellationTokenSource(500);
-        await Task.Run(() => _server!.Dispose(), cts.Token);
-        Assert.False(cts.IsCancellationRequested);
-    }
+        [Fact(Timeout = 2000)]
+        public async Task ReadLoop_Exits_On_RemoteClose()
+        {
+            _raw?.Client.Shutdown(SocketShutdown.Send);   // half-close
+            await Task.Delay(100);                       // give server time to read 0 bytes
 
-    public Task DisposeAsync()
-    {
-        _raw?.Dispose();
-        _server?.Dispose();
-        return Task.CompletedTask;
+            // dispose should not hang (listener loop must have exited)
+            var cts = new CancellationTokenSource(500);
+            await Task.Run(() => _server!.Dispose(), cts.Token);
+            Assert.False(cts.IsCancellationRequested);
+        }
+
+        public Task DisposeAsync()
+        {
+            _raw?.Dispose();
+            _server?.Dispose();
+            return Task.CompletedTask;
+        }
     }
 }
