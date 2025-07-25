@@ -11,13 +11,7 @@ namespace CoreLibrary.Tests.Communication
         [Fact]
         public async Task Tcp_StartAndDispose_DoesNotThrow()
         {
-            var cfg = new Configuration
-            {
-                BindAddress = "0.0.0.0",
-                TargetAddress = "127.0.0.1",
-                Port = PortFinder.FreePort(),
-                Transport = TransportKind.Tcp
-            };
+            var cfg = TestConfig.TcpLoopback(PortFinder.FreePort());
 
             using var server = new TcpCommunicator(cfg);
             await server.StartAsync();         // listener bound before Dispose

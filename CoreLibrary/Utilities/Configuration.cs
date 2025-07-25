@@ -11,7 +11,7 @@ namespace CoreLibrary.Utilities
 
     /* -------------------- POCO --------------------- */
 
-    public class Configuration
+    public record Configuration
     {
         /* networking */
         public string BindAddress { get; init; } = "0.0.0.0";

@@ -17,7 +17,7 @@ namespace CoreLibrary.Tests.Communication
 
         public TcpIntegrationTests()
         {
-            _cfg = new Configuration { BindAddress = "0.0.0.0", TargetAddress = "127.0.0.1", Port = _port, Transport = TransportKind.Tcp };
+            _cfg = TestConfig.TcpLoopback(PortFinder.FreePort());
             _server = new TcpCommunicator(_cfg);
             _server.MessageReceived += (_, m) => _received.Add(m);
         }

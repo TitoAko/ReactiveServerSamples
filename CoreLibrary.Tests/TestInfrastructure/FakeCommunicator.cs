@@ -19,8 +19,9 @@ namespace CoreLibrary.Tests.TestInfrastructure
             return Task.CompletedTask;
         }
 
+#pragma warning disable CS0067
         public event EventHandler<Message>? MessageReceived;
-
+#pragma warning disable
         public void Dispose() => _disposed = true;
     }
 }
