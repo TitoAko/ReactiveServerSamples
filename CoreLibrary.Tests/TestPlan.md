@@ -1,39 +1,47 @@
 ﻿# ✅ CoreLibrary Test Coverage Plan
 
-This document tracks unit- and integration-test coverage goals for the networking-chat system.
+This document tracks **unit** and **integration** test coverage goals for the CorePunk networking chat system.
 
 ---
 
-## 🎯 Target Coverage: ≥ 80 % of core logic
+## 🎯 Target Coverage — ≥ 80 % of core logic
 
-Focus is placed on
+Focus areas ⁠(highest ROI for reliability):
 
-* Observable-event correctness  
-* Lifecycle integrity (e.g. sockets disposed safely)  
-* Key logical units (AppLock, handlers, communicators)
+- Observable-event correctness (`MessageReceived`, handler events)
+- Lifecycle integrity (e.g. communicator Dispose ↔ socket state)
+- Guard clauses on size / emptiness / cancellation edge cases
+- App-level single-instance enforcement (`AppLock`)
+
+Current **coverage** (Coverlet): **≈ 78 %** → only a few edge tests remain to cross 80 %.
 
 ---
 
 ## ✅ Progress Table
 
-| ✓ | Module            | Target class / area       | Key tests (examples)                                  | Status |
-|---|-------------------|---------------------------|-------------------------------------------------------|--------|
-| ✓ | Configuration     | `Configuration`           | Unique ClientId, default fall-backs                   | Done   |
-| ✓ | App-lock          | `AppLock`                | Mutex prevents 2nd instance                           | Done   |
-| ✓ | Messaging         | `Message`, type converter | JSON round-trip, enum serialization                   | Done   |
-| ✓ | Factory           | `CommunicatorFactory`     | Transport selection, bad-enum guard                  | Done   |
-| ✓ | UDP send/receive  | `UdpSender/Receiver`      | 60 kB cap, order preservation, exit message           | Done   |
-| ✓ | TCP parity        | `TcpSender/Receiver`      | Round-trip chat, dispose smoke-test                   | Done   |
-| ⏳ | Edge-cases        | All transports            | Zero-length payload, half-close, cancellation         | **Planned** |
-| ⏳ | Distributed store | TBD                       | Dynamo/Cosmos CRUD integration tests                  | **Planned** |
+| ✅ | Module&nbsp;Area           | Target Class / Helper | Key Tests (examples)                                         | Status |
+|----|---------------------------|-----------------------|--------------------------------------------------------------|--------|
+| ✅ | Client Events             | `ClientHandler`       | `OnConnect`, `OnDisconnect`, `OnMessageReceived`             | **Done** |
+| ✅ | AppLock Re-entry Guard    | `AppLock`             | second instance denied, mutex disposal                       | **Done** |
+| ✅ | Input Parsing             | `InputHandler`        | `/exit`, `/w`, generic text                                  | **Done** |
+| ✅ | Config & Port Helpers     | `Configuration`       | unique *ClientId*, `IsEndpointBusy`, record `with` cloning   | **Done** |
+| ✅ | Message Format            | `Message`             | JSON round-trip, converter recognises `TextMessage`          | **Done** |
+| ✅ | Factory Smoke            | `CommunicatorFactory` | correct enum → transport; throws on bad enum                 | **Done** |
+| ✅ | **UDP integration**       | `UdpCommunicator`     | single chat, `/exit`, order preservation                     | **Done** |
+| ✅ | Disposal Guard (UDP)      | `UdpCommunicator`     | dispose while receiving                                      | **Done** |
+| ✅ | **TCP integration**       | `TcpCommunicator`     | round-trip chat, start/stop smoke                            | **Done** |
+| ✅ | **Edge cases (TCP/UDP)**  | Sender / Receiver     | 60 kB overflow, zero-length reject, half-close, token cancel | **Done** |
 
 ---
 
 ## 📘 Notes
-* Coverage currently ≈ 72 % (see CI badge). Goal is 80 %+ after adding the _Edge-cases_ bucket.  
-* Future modules (Distributed-Store prototype, Payment flow) will add their own test suites.
+
+*   **Zero-byte TCP writes** are treated as protocol errors and now raise `ArgumentException`; the test asserts the guard instead of waiting forever.  
+*   New helpers (`PortFinder`, `TestConfig`, `TaskExtensions.TimeoutAfter`) keep tests concise and prevent flaky delays.  
+*   Coverlet collector is wired to CI; the shield badge in README auto-updates after each push.  
+*   When TCP feature work resumes (back-pressure, congestion metrics) we’ll mirror edge-case tests for those scenarios.
 
 ---
 
-## 🔄 Last updated
-`24 / 07 / 2025`
+## 🔄 Last Updated
+`25 / 07 / 2025`
