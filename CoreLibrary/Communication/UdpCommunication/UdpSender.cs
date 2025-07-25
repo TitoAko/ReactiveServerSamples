@@ -45,6 +45,8 @@ namespace CoreLibrary.Communication.UdpCommunication
         /// <param name="cancellationToken">Token for graceful cancellation.</param>
         public async Task SendMessageAsync(Message message, CancellationToken cancellationToken = default)
         {
+            if (message.Content.Length == 0)
+                throw new ArgumentException("Empty payload", nameof(message));
 
             string json = JsonSerializer.Serialize(message, _jsonSerializerOptions);
 

@@ -21,15 +21,15 @@ public class TcpZeroLengthPayloadTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task EmptyMessage_RoundTrips()
+    public async Task EmptyMessage_IsRejected()
     {
-        var list = new List<Message>();
-        _server!.MessageReceived += (_, m) => list.Add(m);
+        var cfg = TestConfig.TcpLoopback(PortFinder.FreePort());
+        using var s = new TcpSender(cfg);
 
-        await _client!.SendMessageAsync(new Message("cli", ""));
+        var empty = new Message("cli", "");
 
-        await TaskTimeoutExtensions.WaitForMessageAsync(list, 1, 1000);
-        Assert.Equal(string.Empty, list.Single().Content);
+        await Assert.ThrowsAsync<ArgumentException>(() =>
+            s.SendAsync(empty).TimeoutAfter(TimeSpan.FromSeconds(1)));
     }
 
     public Task DisposeAsync()

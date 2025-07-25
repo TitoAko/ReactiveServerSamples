@@ -22,14 +22,15 @@ public sealed class TcpSender : IDisposable
 
     public async Task SendAsync(Message message, CancellationToken token = default)
     {
+        if (_disposed) throw new ObjectDisposedException(nameof(TcpSender));
+        if (message.Content.Length == 0)
+            throw new ArgumentException("Empty payload", nameof(message)); 
         if (!_connected)
         {
             _tcp.Connect(_cfg.TargetAddress, _cfg.Port);
             _connected = true;
         }
 
-        if (_disposed)
-            throw new ObjectDisposedException(nameof(TcpSender));
         string json = JsonSerializer.Serialize(message, _json);
         byte[] buffer = Encoding.UTF8.GetBytes(json);
         await _tcp.GetStream().WriteAsync(buffer, token).ConfigureAwait(false);
