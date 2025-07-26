@@ -11,30 +11,32 @@ namespace CoreLibrary.Communication.UdpCommunication
     {
         private readonly UdpSender _sender;
         private readonly UdpReceiver _receiver;
-        private readonly CancellationTokenSource _cts = new();
+        private readonly CancellationTokenSource _cancellationTokenSource = new();
 
         public event EventHandler<Message>? MessageReceived;
 
-        public UdpCommunicator(Configuration cfg, int? remotePort = null)
+        public UdpCommunicator(Configuration configuration, int? remotePort = null)
         {
-            _sender = new UdpSender(cfg, remotePort ?? cfg.Port);
-            _receiver = new UdpReceiver(cfg);
-            _receiver.MessageReceived += (_, m) => MessageReceived?.Invoke(this, m);
+            _sender = new UdpSender(configuration, remotePort ?? configuration.Port);
+            _receiver = new UdpReceiver(configuration);
+            _receiver.MessageReceived += (_, message) => MessageReceived?.Invoke(this, message);
         }
 
         public Task SendMessageAsync(Message message,
-                                     CancellationToken token = default) =>
-            _sender.SendMessageAsync(message, token);
+                                     CancellationToken token = default)
+        {
+            return _sender.SendMessageAsync(message, token);
+        }
 
         public async Task StartAsync(CancellationToken token = default)
         {
-            using var linked = CancellationTokenSource.CreateLinkedTokenSource(token, _cts.Token);
+            using var linked = CancellationTokenSource.CreateLinkedTokenSource(token, _cancellationTokenSource.Token);
             await _receiver.ListenAsync(linked.Token).ConfigureAwait(false);
         }
 
         public void Dispose()
         {
-            _cts.Cancel();
+            _cancellationTokenSource.Cancel();
             _receiver.Dispose();
             _sender.Dispose();
         }

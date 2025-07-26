@@ -10,20 +10,31 @@ public sealed class UserManager
 
     public IReadOnlyCollection<ClientConnection> All
     {
-        get { lock (_lock) return _clients.Values.ToList(); }
+        get
+        {
+            lock (_lock)
+            {
+                return _clients.Values.ToList();
+            }
+        }
     }
 
-    public void Add(ClientConnection c)
+    public void Add(ClientConnection clientConnection)
     {
-        lock (_lock) _clients[c.Id] = c;
+        lock (_lock)
+        {
+            _clients[clientConnection.Id] = clientConnection;
+        }
     }
 
     public void Remove(string id)
     {
         lock (_lock)
         {
-            if (_clients.Remove(id, out var c))
-                c.Dispose();
+            if (_clients.Remove(id, out var clientConnection))
+            {
+                clientConnection.Dispose();
+            }
         }
     }
 }

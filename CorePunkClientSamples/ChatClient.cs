@@ -27,7 +27,10 @@ namespace ClientApp
             while (true)
             {
                 bool wantExit = await _input.PumpAsync(_cts.Token);
-                if (wantExit) break;
+                if (wantExit)
+                {
+                    break;
+                }
             }
 
             await _comm.SendMessageAsync(

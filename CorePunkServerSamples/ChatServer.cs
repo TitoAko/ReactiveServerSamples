@@ -1,6 +1,7 @@
 ﻿using CoreLibrary.Factories;
 using CoreLibrary.Messaging;
 using CoreLibrary.Utilities;
+
 using ServerApp.Models;
 
 namespace ServerApp
@@ -13,29 +14,29 @@ namespace ServerApp
     {
         private readonly UserManager _users = new();
 
-        public async Task AddClientAsync(Configuration cfg)
+        public async Task AddClientAsync(Configuration configuration)
         {
-            var comm = CommunicatorFactory.Create(cfg);
-            var conn = new ClientConnection(comm);
-            _users.Add(conn);
+            var communicator = CommunicatorFactory.Create(configuration);
+            var clientConnection = new ClientConnection(communicator);
+            _users.Add(clientConnection);
 
-            conn.Received += (_, m) => OnMessage(conn, m);
+            clientConnection.Received += (_, message) => OnMessage(clientConnection, message);
 
-            await conn.StartAsync();
+            await clientConnection.StartAsync();
         }
 
-        private async void OnMessage(ClientConnection sender, Message m)
+        private async void OnMessage(ClientConnection sender, Message message)
         {
-            if (m.Type == MessageType.Exit)
+            if (message.Type == MessageType.Exit)
             {
                 _users.Remove(sender.Id);
                 return;
             }
 
             // broadcast
-            foreach (var other in _users.All.Where(c => c.Id != sender.Id))
+            foreach (var targetClient in _users.All.Where(clientConnection => clientConnection.Id != sender.Id))
             {
-                try { await other.SendAsync(m); }
+                try { await targetClient.SendAsync(message); }
                 catch { /* swallow for now; cleanup on future exit */ }
             }
         }

@@ -10,20 +10,19 @@ namespace ClientApp
         /// </summary>
         public static async Task RunAsync(string[] args)
         {
-            var cli = new Cli(args);           // use any simple CLI parser you like
-            var cfg = new Configuration
+            var commandLineParser = new Cli(args);           // use any simple CLI parser you like
+            var configuration = new Configuration
             {
-                BindAddress = cli.Get("--bind", "0.0.0.0"),
-                TargetAddress = cli.Get("--target", "server"),
-                Port = cli.Get("--port", 9000),
+                BindAddress = commandLineParser.Get("--bind", "0.0.0.0"),
+                TargetAddress = commandLineParser.Get("--target", "server"),
+                Port = commandLineParser.Get("--port", 9000),
                 Role = NodeRole.Server
             };
 
+            ICommunicator comm = new UdpCommunicator(configuration);
 
-            ICommunicator comm = new UdpCommunicator(cfg);
-
-            using var chat = new ChatClient(comm, cfg.ClientId);
-            await chat.RunAsync();
+            using var chatClient = new ChatClient(comm, configuration.ClientId);
+            await chatClient.RunAsync();
         }
     }
 }

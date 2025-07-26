@@ -2,6 +2,7 @@
 using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
+
 using CoreLibrary.Messaging;
 using CoreLibrary.Utilities;
 
@@ -21,7 +22,7 @@ namespace CoreLibrary.Communication.TcpCommunication
 
         public Task Started => _listenerStartedTcs.Task;     // awaited by tests
 
-        private readonly JsonSerializerOptions _json = new()
+        private readonly JsonSerializerOptions _jsonSerializerOptions = new()
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             Converters = { new MessageTypeConverter() }
@@ -29,10 +30,10 @@ namespace CoreLibrary.Communication.TcpCommunication
 
         public event EventHandler<Message>? MessageReceived;
 
-        public TcpCommunicator(Configuration cfg)
+        public TcpCommunicator(Configuration configuration)
         {
-            _listener = new TcpListener(IPAddress.Parse(cfg.BindAddress), cfg.Port);
-            _sender = new TcpSender(cfg);
+            _listener = new TcpListener(IPAddress.Parse(configuration.BindAddress), configuration.Port);
+            _sender = new TcpSender(configuration);
         }
 
         #region ICommunicator
@@ -42,8 +43,10 @@ namespace CoreLibrary.Communication.TcpCommunication
             await Started;                                   // wait until bound
         }
 
-        public Task SendMessageAsync(Message m, CancellationToken t = default) =>
-            _sender.SendAsync(m, t);
+        public Task SendMessageAsync(Message message, CancellationToken token = default)
+        {
+            return _sender.SendAsync(message, token);
+        }
         #endregion
         #region Listener loop
         private async Task AcceptLoopAsync(CancellationToken token)
@@ -73,11 +76,14 @@ namespace CoreLibrary.Communication.TcpCommunication
                 while (!token.IsCancellationRequested)
                 {
                     int read = await stream.ReadAsync(buffer, token);
-                    if (read == 0) break;                   // remote closed
+                    if (read == 0)
+                    {
+                        break;                   // remote closed
+                    }
 
-                    string json = Encoding.UTF8.GetString(buffer, 0, read);
-                    var msg = JsonSerializer.Deserialize<Message>(json, _json)!;
-                    MessageReceived?.Invoke(this, msg);
+                    string serializedMessage = Encoding.UTF8.GetString(buffer, 0, read);
+                    var message = JsonSerializer.Deserialize<Message>(serializedMessage, _jsonSerializerOptions)!;
+                    MessageReceived?.Invoke(this, message);
                 }
             }
             catch (OperationCanceledException) { /* ignore */ }

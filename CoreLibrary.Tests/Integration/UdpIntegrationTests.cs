@@ -8,34 +8,34 @@ namespace CoreLibrary.Tests.Integration
 
     public sealed class UdpIntegrationTests : IAsyncLifetime
     {
-        private UdpCommunicator? _a, _b;
-        private readonly List<Message> _aReceived = new();
-        private readonly List<Message> _bReceived = new();
+        private UdpCommunicator? _firstCommunicator, _secondCommunicator;
+        private readonly List<Message> _firstMessageReceived = new();
+        private readonly List<Message> _secondMessageReceived = new();
 
         public async Task InitializeAsync()
         {
-            int portA = PortFinder.FreePort();
-            int portB = PortFinder.FreePort();
+            int senderPort = PortFinder.FreePort();
+            int communicatorPort = PortFinder.FreePort();
 
-            var cfgA = new Configuration { IpAddress = "127.0.0.1", Port = portA };
-            var cfgB = new Configuration { IpAddress = "127.0.0.1", Port = portB };
+            var senderConfiguration = new Configuration { IpAddress = "127.0.0.1", Port = senderPort };
+            var communicatorConfiguration = new Configuration { IpAddress = "127.0.0.1", Port = communicatorPort };
 
-            _a = new UdpCommunicator(cfgA, remotePort: portB); // A sends to B
-            _b = new UdpCommunicator(cfgB, remotePort: portA); // B sends to A
+            _firstCommunicator = new UdpCommunicator(senderConfiguration, remotePort: communicatorPort); // A sends to B
+            _secondCommunicator = new UdpCommunicator(communicatorConfiguration, remotePort: senderPort); // B sends to A
 
-            _a.MessageReceived += (_, m) => _aReceived.Add(m);
-            _b.MessageReceived += (_, m) => _bReceived.Add(m);
+            _firstCommunicator.MessageReceived += (_, message) => _firstMessageReceived.Add(message);
+            _secondCommunicator.MessageReceived += (_, message) => _secondMessageReceived.Add(message);
 
-            _ = _a.StartAsync();
-            _ = _b.StartAsync();
+            _ = _firstCommunicator.StartAsync();
+            _ = _secondCommunicator.StartAsync();
 
             await Task.Delay(50); // allow sockets to bind
         }
 
         public Task DisposeAsync()
         {
-            _a?.Dispose();
-            _b?.Dispose();
+            _firstCommunicator?.Dispose();
+            _secondCommunicator?.Dispose();
             return Task.CompletedTask;
         }
 
@@ -43,30 +43,32 @@ namespace CoreLibrary.Tests.Integration
         public async Task SendAndReceive_SingleChatMessage()
         {
             var msg = new Message("alice", "ping", MessageType.Chat);
-            await _a!.SendMessageAsync(msg);
+            await _firstCommunicator!.SendMessageAsync(msg);
 
-            await WaitUntil(() => _bReceived.Count == 1);
-            Assert.Equal("ping", _bReceived[0].Content);
+            await WaitUntil(() => _secondMessageReceived.Count == 1);
+            Assert.Equal("ping", _secondMessageReceived[0].Content);
         }
 
         [Fact]
         public async Task SendAndReceive_ExitMessage()
         {
-            var msg = new Message("bob", "<bye>", MessageType.Exit);
-            await _b!.SendMessageAsync(msg);
+            var message = new Message("bob", "<bye>", MessageType.Exit);
+            await _secondCommunicator!.SendMessageAsync(message);
 
-            await WaitUntil(() => _aReceived.Any(m => m.Type == MessageType.Exit));
-            Assert.Equal(MessageType.Exit, _aReceived.Last().Type);
+            await WaitUntil(() => _firstMessageReceived.Any(messageReceived => messageReceived.Type == MessageType.Exit));
+            Assert.Equal(MessageType.Exit, _firstMessageReceived.Last().Type);
         }
 
         [Fact]
         public async Task Messages_Preserve_Order()
         {
             for (int i = 0; i < 5; i++)
-                await _a!.SendMessageAsync(new Message("seq", $"#{i}", MessageType.Chat));
+            {
+                await _firstCommunicator!.SendMessageAsync(new Message("seq", $"#{i}", MessageType.Chat));
+            }
 
-            await WaitUntil(() => _bReceived.Count >= 5);
-            var contents = _bReceived.Take(5).Select(m => m.Content).ToArray();
+            await WaitUntil(() => _secondMessageReceived.Count >= 5);
+            var contents = _secondMessageReceived.Take(5).Select(m => m.Content).ToArray();
             Assert.Equal(new[] { "#0", "#1", "#2", "#3", "#4" }, contents);
         }
 
@@ -77,7 +79,10 @@ namespace CoreLibrary.Tests.Integration
             while (!condition())
             {
                 if (sw.ElapsedMilliseconds > ms)
+                {
                     throw new TimeoutException("Condition not met in time.");
+                }
+
                 await Task.Delay(10);
             }
         }

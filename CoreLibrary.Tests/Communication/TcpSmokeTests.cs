@@ -9,13 +9,13 @@ namespace CoreLibrary.Tests.Communication
         [Fact]
         public async Task Tcp_StartAndDispose_DoesNotThrow()
         {
-            var cfg = TestConfig.TcpLoopback(PortFinder.FreePort());
+            var configuration = TestConfig.TcpLoopback(PortFinder.FreePort());
 
-            using var comm = new TcpCommunicator(cfg);
-            await comm.StartAsync();         // listener bound before Dispose
-            await comm.Started;
+            using var communicator = new TcpCommunicator(configuration);
+            await communicator.StartAsync();         // listener bound before Dispose
+            await communicator.Started;
 
-            using var client = new TcpCommunicator(cfg);
+            using var client = new TcpCommunicator(configuration);
             await client.SendMessageAsync(new Message("test", "ping"));
         }
     }

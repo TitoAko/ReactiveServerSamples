@@ -1,9 +1,10 @@
-﻿using CoreLibrary.Messaging;
-using CoreLibrary.Utilities;
-using System.Net;
+﻿using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
+
+using CoreLibrary.Messaging;
+using CoreLibrary.Utilities;
 
 namespace CoreLibrary.Communication.UdpCommunication
 {
@@ -54,7 +55,9 @@ namespace CoreLibrary.Communication.UdpCommunication
                     var message = JsonSerializer.Deserialize<Message>(json, _jsonOptions);
 
                     if (message is not null)
+                    {
                         MessageReceived?.Invoke(this, message);
+                    }
                 }
                 catch (OperationCanceledException)
                 {

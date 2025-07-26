@@ -10,13 +10,15 @@ namespace CoreLibrary.Factories
     /// </summary>
     public static class CommunicatorFactory
     {
-        public static ICommunicator Create(Configuration cfg) =>
-            cfg.Transport switch
+        public static ICommunicator Create(Configuration configuration)
+        {
+            return configuration.Transport switch
             {
-                TransportKind.Udp => new UdpCommunicator(cfg),
-                TransportKind.Tcp => new TcpCommunicator(cfg),
+                TransportKind.Udp => new UdpCommunicator(configuration),
+                TransportKind.Tcp => new TcpCommunicator(configuration),
                 _ => throw new NotSupportedException(
-                         $"Transport '{cfg.Transport}' not recognised.")
+                         $"Transport '{configuration.Transport}' not recognised.")
             };
+        }
     }
 }

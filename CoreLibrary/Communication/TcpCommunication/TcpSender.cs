@@ -1,6 +1,7 @@
 ﻿using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
+
 using CoreLibrary.Messaging;
 using CoreLibrary.Utilities;
 
@@ -9,16 +10,19 @@ namespace CoreLibrary.Communication.TcpCommunication
     public sealed class TcpSender : IDisposable
     {
         private bool _disposed;
-        private readonly JsonSerializerOptions _json = new()
+        private readonly JsonSerializerOptions _jsonSerializerOptions = new()
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             Converters = { new MessageTypeConverter() }
         };
-        private readonly TcpClient _tcp = new();
-        private readonly Configuration _cfg;
+        private readonly TcpClient _tcpClient = new();
+        private readonly Configuration _configuration;
         private bool _connected;
 
-        public TcpSender(Configuration cfg) => _cfg = cfg;
+        public TcpSender(Configuration cfg)
+        {
+            _configuration = cfg;
+        }
 
         public async Task SendAsync(Message message, CancellationToken token = default)
         {
@@ -34,19 +38,19 @@ namespace CoreLibrary.Communication.TcpCommunication
 
             if (!_connected)
             {
-                _tcp.Connect(_cfg.TargetAddress, _cfg.Port);
+                _tcpClient.Connect(_configuration.TargetAddress, _configuration.Port);
                 _connected = true;
             }
 
-            string json = JsonSerializer.Serialize(message, _json);
-            byte[] buffer = Encoding.UTF8.GetBytes(json);
-            await _tcp.GetStream().WriteAsync(buffer, token).ConfigureAwait(false);
+            string serializedMessage = JsonSerializer.Serialize(message, _jsonSerializerOptions);
+            byte[] buffer = Encoding.UTF8.GetBytes(serializedMessage);
+            await _tcpClient.GetStream().WriteAsync(buffer, token).ConfigureAwait(false);
         }
 
         public void Dispose()
         {
             _disposed = true;
-            _tcp.Dispose();
+            _tcpClient.Dispose();
         }
     }
 }

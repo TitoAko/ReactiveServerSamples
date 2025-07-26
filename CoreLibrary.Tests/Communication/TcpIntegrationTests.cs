@@ -2,6 +2,7 @@
 using CoreLibrary.Messaging;
 using CoreLibrary.Tests.TestInfrastructure;
 using CoreLibrary.Utilities;
+
 using FluentAssertions;
 
 namespace CoreLibrary.Tests.Communication
@@ -9,7 +10,7 @@ namespace CoreLibrary.Tests.Communication
     public class TcpIntegrationTests : IAsyncLifetime
     {
         private readonly int _port = PortFinder.FreePort();
-        private readonly Configuration _cfg;
+        private readonly Configuration _configuration;
         private readonly TcpCommunicator _server;
         private TcpCommunicator? _client;
 
@@ -17,8 +18,8 @@ namespace CoreLibrary.Tests.Communication
 
         public TcpIntegrationTests()
         {
-            _cfg = TestConfig.TcpLoopback(PortFinder.FreePort());
-            _server = new TcpCommunicator(_cfg);
+            _configuration = TestConfig.TcpLoopback(PortFinder.FreePort());
+            _server = new TcpCommunicator(_configuration);
             _server.MessageReceived += (_, m) => _received.Add(m);
         }
 
@@ -26,7 +27,7 @@ namespace CoreLibrary.Tests.Communication
         {
             await _server.StartAsync();
             await _server.Started;
-            _client = new TcpCommunicator(_cfg); // reinitialize client after server started
+            _client = new TcpCommunicator(_configuration); // reinitialize client after server started
         }
         public Task DisposeAsync()
         {
@@ -38,8 +39,8 @@ namespace CoreLibrary.Tests.Communication
         [Fact(Timeout = 2000)]
         public async Task SendAndReceive_SingleChatMessage()
         {
-            var msg = new Message("cli", "hello");
-            await _client!.SendMessageAsync(msg).TimeoutAfter(TimeSpan.FromSeconds(1));
+            var message = new Message("cli", "hello");
+            await _client!.SendMessageAsync(message).TimeoutAfter(TimeSpan.FromSeconds(1));
             await TaskTimeoutExtensions.WaitForMessageAsync<Message>(_received, 1, 1000);
             _received.Single().Content.Should().Be("hello");
         }

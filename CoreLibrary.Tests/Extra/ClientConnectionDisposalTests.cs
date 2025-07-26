@@ -9,11 +9,11 @@ namespace CoreLibrary.Tests.Extra
         [Fact]
         public async Task Dispose_CancelsCommunicator()
         {
-            var comm = new FakeCommunicator();          // ← use stub
-            comm.Dispose();
+            var communicator = new FakeCommunicator();          // ← use stub
+            communicator.Dispose();
 
             await Assert.ThrowsAsync<ObjectDisposedException>(() =>
-                comm.SendMessageAsync(new Message("cli", "ping")));
+                communicator.SendMessageAsync(new Message("cli", "ping")));
         }
     }
 }

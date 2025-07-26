@@ -22,13 +22,13 @@ namespace CoreLibrary.Tests.Extra
         [Fact]
         public void VeryLongLine_Truncates()
         {
-            var longMsg = new string('y', 300);
-            var handler = new OutputHandler();
+            var longMessage = new string('y', 300);
+            var outputHandler = new OutputHandler();
 
             var writer = new StringWriter();
             Console.SetOut(writer);
 
-            handler.DisplayMessage(new Message("alice", longMsg, MessageType.Chat));
+            outputHandler.DisplayMessage(new Message("alice", longMessage, MessageType.Chat));
 
             string output = writer.ToString();
             Assert.True(output.Length < 260); // displays HH:mm + sender + ~240 chars

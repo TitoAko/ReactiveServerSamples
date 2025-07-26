@@ -10,11 +10,17 @@ namespace CoreLibrary.Tests.TestInfrastructure
         private bool _disposed;
         public readonly List<Message> Sent = new();
 
-        public Task StartAsync(CancellationToken token = default) => Task.CompletedTask;
+        public Task StartAsync(CancellationToken token = default)
+        {
+            return Task.CompletedTask;
+        }
 
         public Task SendMessageAsync(Message m, CancellationToken token = default)
         {
-            if (_disposed) throw new ObjectDisposedException(nameof(FakeCommunicator));
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(nameof(FakeCommunicator));
+            }
             Sent.Add(m);
             return Task.CompletedTask;
         }

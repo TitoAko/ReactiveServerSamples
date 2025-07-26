@@ -12,24 +12,24 @@ namespace CoreLibrary.Tests.EdgeCases
 
         public async Task InitializeAsync()
         {
-            var cfg = TestConfig.TcpLoopback(PortFinder.FreePort());
-            _server = new TcpCommunicator(cfg);
+            var configuration = TestConfig.TcpLoopback(PortFinder.FreePort());
+            _server = new TcpCommunicator(configuration);
             await _server.StartAsync();
             await _server.Started;
-            _client = new TcpCommunicator(cfg);
+            _client = new TcpCommunicator(configuration);
         }
 
         [Fact]
         public async Task EmptyMessage_IsRejected()
         {
-            var cfg = TestConfig.TcpLoopback(PortFinder.FreePort());
+            var configuration = TestConfig.TcpLoopback(PortFinder.FreePort());
 
-            using var sender = new TcpSender(cfg);
+            using var sender = new TcpSender(configuration);
 
-            var empty = new Message("cli", "");
+            var emptyMessage = new Message("cli", "");
 
             await Assert.ThrowsAsync<ArgumentException>(() =>
-                sender.SendAsync(empty));
+                sender.SendAsync(emptyMessage));
         }
 
         public Task DisposeAsync()

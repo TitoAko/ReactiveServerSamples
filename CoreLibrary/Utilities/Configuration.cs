@@ -19,8 +19,7 @@ namespace CoreLibrary.Utilities
 
         public string IpAddress
         {
-            get => TargetAddress;
-            init { TargetAddress = value; }
+            get => TargetAddress; init => TargetAddress = value;
         }
         public int Port { get; init; } = 9000;
         public TransportKind Transport { get; init; } = TransportKind.Udp;
@@ -38,8 +37,8 @@ namespace CoreLibrary.Utilities
         {
             try
             {
-                using var tcp = new TcpListener(IPAddress.Parse(IpAddress), Port);
-                tcp.Start();
+                using var tcpListener = new TcpListener(IPAddress.Parse(IpAddress), Port);
+                tcpListener.Start();
                 return false;   // bind succeeded → port was free
             }
             catch (SocketException) { return true; }

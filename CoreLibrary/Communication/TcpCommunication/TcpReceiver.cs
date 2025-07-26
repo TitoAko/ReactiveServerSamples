@@ -2,6 +2,7 @@
 using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
+
 using CoreLibrary.Messaging;
 using CoreLibrary.Utilities;
 
@@ -9,7 +10,7 @@ namespace CoreLibrary.Communication.TcpCommunication
 {
     public sealed class TcpReceiver
     {
-        private readonly JsonSerializerOptions _json = new()
+        private readonly JsonSerializerOptions _jsonSerializerOptions = new()
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             Converters = { new MessageTypeConverter() }
@@ -17,9 +18,9 @@ namespace CoreLibrary.Communication.TcpCommunication
         private readonly TcpListener _listener;
         public event EventHandler<Message>? MessageReceived;
 
-        public TcpReceiver(Configuration cfg)
+        public TcpReceiver(Configuration configuration)
         {
-            _listener = new TcpListener(IPAddress.Parse(cfg.BindAddress), cfg.Port);
+            _listener = new TcpListener(IPAddress.Parse(configuration.BindAddress), configuration.Port);
         }
 
         public async Task ListenAsync(CancellationToken token = default)
@@ -40,15 +41,21 @@ namespace CoreLibrary.Communication.TcpCommunication
             while (!token.IsCancellationRequested)
             {
                 int read = await stream.ReadAsync(buffer, token);
-                if (read == 0) break;                          // remote closed
+                if (read == 0)
+                {
+                    break;                          // remote closed
+                }
 
-                string json = Encoding.UTF8.GetString(buffer, 0, read);
-                var msg = JsonSerializer.Deserialize<Message>(json, _json)!;
-                MessageReceived?.Invoke(this, msg);
+                string serializedMessage = Encoding.UTF8.GetString(buffer, 0, read);
+                var message = JsonSerializer.Deserialize<Message>(serializedMessage, _jsonSerializerOptions)!;
+                MessageReceived?.Invoke(this, message);
             }
             client.Dispose();
         }
 
-        public void Dispose() => _listener.Stop();
+        public void Dispose()
+        {
+            _listener.Stop();
+        }
     }
 }

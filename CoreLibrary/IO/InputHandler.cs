@@ -5,12 +5,12 @@ namespace CoreLibrary.IO
 {
     public sealed class InputHandler
     {
-        private readonly ICommunicator _comm;
+        private readonly ICommunicator _communicator;
         private readonly string _sender;
 
-        public InputHandler(ICommunicator comm, string sender)
+        public InputHandler(ICommunicator communicator, string sender)
         {
-            _comm = comm;
+            _communicator = communicator;
             _sender = sender;
         }
 
@@ -19,10 +19,12 @@ namespace CoreLibrary.IO
         {
             string? line = Console.ReadLine();
             if (line == null || line.Equals("exit", StringComparison.OrdinalIgnoreCase))
+            {
                 return true;
+            }
 
-            var msg = new Message(_sender, line);
-            await _comm.SendMessageAsync(msg, token);
+            var message = new Message(_sender, line);
+            await _communicator.SendMessageAsync(message, token);
             return false;
         }
     }

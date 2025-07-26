@@ -7,28 +7,34 @@ namespace ServerApp.Models
     /// </summary>
     public sealed class ClientConnection : IDisposable
     {
-        private readonly CancellationTokenSource _cts = new();
-        private readonly ICommunicator _comm;
+        private readonly CancellationTokenSource _cancellationTokenSource = new();
+        private readonly ICommunicator _communicator;
 
         public string Id { get; }
         public event EventHandler<Message>? Received;
 
         public ClientConnection(ICommunicator communicator, string? id = null)
         {
-            _comm = communicator ?? throw new ArgumentNullException(nameof(communicator));
+            _communicator = communicator ?? throw new ArgumentNullException(nameof(communicator));
             Id = id ?? Guid.NewGuid().ToString("N");
 
-            _comm.MessageReceived += (_, m) => Received?.Invoke(this, m);
+            _communicator.MessageReceived += (_, message) => Received?.Invoke(this, message);
         }
 
-        public Task StartAsync() => _comm.StartAsync(_cts.Token);
+        public Task StartAsync()
+        {
+            return _communicator.StartAsync(_cancellationTokenSource.Token);
+        }
 
-        public Task SendAsync(Message m) => _comm.SendMessageAsync(m, _cts.Token);
+        public Task SendAsync(Message message)
+        {
+            return _communicator.SendMessageAsync(message, _cancellationTokenSource.Token);
+        }
 
         public void Dispose()
         {
-            _cts.Cancel();
-            _comm.Dispose();
+            _cancellationTokenSource.Cancel();
+            _communicator.Dispose();
         }
     }
 }

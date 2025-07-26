@@ -8,18 +8,18 @@ namespace ServerApp
     /// </summary>
     public sealed class ServerAppInitializer
     {
-        private readonly Configuration _cfg;
+        private readonly Configuration _configurationg;
         private readonly ChatServer _server = new();
-        private readonly CancellationTokenSource _cts = new();
+        private readonly CancellationTokenSource _cancellationTokenSource = new();
 
         public ServerAppInitializer(string[] args)
         {
-            var cli = new Cli(args);           // use any simple CLI parser you like
-            _cfg = new Configuration
+            var commandLineParser = new Cli(args);           // use any simple CLI parser you like
+            _configurationg = new Configuration
             {
-                BindAddress = cli.Get("--bind", "0.0.0.0"),
-                TargetAddress = cli.Get("--target", "server"),
-                Port = cli.Get("--port", 9000),
+                BindAddress = commandLineParser.Get("--bind", "0.0.0.0"),
+                TargetAddress = commandLineParser.Get("--target", "server"),
+                Port = commandLineParser.Get("--port", 9000),
                 Role = NodeRole.Server
             };
 
@@ -27,18 +27,18 @@ namespace ServerApp
 
         public async Task RunAsync()
         {
-            Console.WriteLine($"[Server] Starting on UDP {_cfg.IpAddress}:{_cfg.Port}");
+            Console.WriteLine($"[Server] Starting on UDP {_configurationg.IpAddress}:{_configurationg.Port}");
 
-            await _server.AddClientAsync(_cfg); // creates UDP listener & waits
+            await _server.AddClientAsync(_configurationg); // creates UDP listener & waits
 
             Console.WriteLine("[Server] Press Ctrl-C to exit.");
-            Console.CancelKeyPress += (_, e) =>
+            Console.CancelKeyPress += (_, eventArgs) =>
             {
-                e.Cancel = true;
-                _cts.Cancel();
+                eventArgs.Cancel = true;
+                _cancellationTokenSource.Cancel();
             };
 
-            try { await Task.Delay(-1, _cts.Token); }
+            try { await Task.Delay(-1, _cancellationTokenSource.Token); }
             catch (TaskCanceledException) { /* graceful */ }
 
             Console.WriteLine("[Server] Shutting down.");
