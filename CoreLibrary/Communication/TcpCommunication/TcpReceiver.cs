@@ -5,49 +5,50 @@ using System.Text.Json;
 using CoreLibrary.Messaging;
 using CoreLibrary.Utilities;
 
-namespace CoreLibrary.Communication.TcpCommunication;
-
-public sealed class TcpReceiver
+namespace CoreLibrary.Communication.TcpCommunication
 {
-    private readonly JsonSerializerOptions _json = new()
+    public sealed class TcpReceiver
     {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        Converters = { new MessageTypeConverter() }
-    };
-    private readonly TcpListener _listener;
-    public event EventHandler<Message>? MessageReceived;
-
-    public TcpReceiver(Configuration cfg)
-    {
-        _listener = new TcpListener(IPAddress.Parse(cfg.BindAddress), cfg.Port);
-    }
-
-    public async Task ListenAsync(CancellationToken token = default)
-    {
-        _listener.Start();
-        while (!token.IsCancellationRequested)
+        private readonly JsonSerializerOptions _json = new()
         {
-            var client = await _listener.AcceptTcpClientAsync(token);
-            _ = HandleClientAsync(client, token);          // fire-and-forget
-        }
-    }
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            Converters = { new MessageTypeConverter() }
+        };
+        private readonly TcpListener _listener;
+        public event EventHandler<Message>? MessageReceived;
 
-    private async Task HandleClientAsync(TcpClient client, CancellationToken token)
-    {
-        var stream = client.GetStream();
-        var buffer = new byte[4096];
-
-        while (!token.IsCancellationRequested)
+        public TcpReceiver(Configuration cfg)
         {
-            int read = await stream.ReadAsync(buffer, token);
-            if (read == 0) break;                          // remote closed
-
-            string json = Encoding.UTF8.GetString(buffer, 0, read);
-            var msg = JsonSerializer.Deserialize<Message>(json, _json)!;
-            MessageReceived?.Invoke(this, msg);
+            _listener = new TcpListener(IPAddress.Parse(cfg.BindAddress), cfg.Port);
         }
-        client.Dispose();
-    }
 
-    public void Dispose() => _listener.Stop();
+        public async Task ListenAsync(CancellationToken token = default)
+        {
+            _listener.Start();
+            while (!token.IsCancellationRequested)
+            {
+                var client = await _listener.AcceptTcpClientAsync(token);
+                _ = HandleClientAsync(client, token);          // fire-and-forget
+            }
+        }
+
+        private async Task HandleClientAsync(TcpClient client, CancellationToken token)
+        {
+            var stream = client.GetStream();
+            var buffer = new byte[4096];
+
+            while (!token.IsCancellationRequested)
+            {
+                int read = await stream.ReadAsync(buffer, token);
+                if (read == 0) break;                          // remote closed
+
+                string json = Encoding.UTF8.GetString(buffer, 0, read);
+                var msg = JsonSerializer.Deserialize<Message>(json, _json)!;
+                MessageReceived?.Invoke(this, msg);
+            }
+            client.Dispose();
+        }
+
+        public void Dispose() => _listener.Stop();
+    }
 }

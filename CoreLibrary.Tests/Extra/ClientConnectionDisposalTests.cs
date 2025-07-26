@@ -1,6 +1,5 @@
 ﻿using CoreLibrary.Messaging;
 using CoreLibrary.Tests.TestInfrastructure;
-using ServerApp.Models;
 
 namespace CoreLibrary.Tests.Extra
 {

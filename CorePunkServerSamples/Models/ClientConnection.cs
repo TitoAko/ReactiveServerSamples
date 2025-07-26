@@ -1,5 +1,4 @@
-﻿using CoreLibrary.Communication;
-using CoreLibrary.Messaging;
+﻿using CoreLibrary.Messaging;
 
 namespace ServerApp.Models
 {

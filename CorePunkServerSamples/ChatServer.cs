@@ -3,40 +3,41 @@ using CoreLibrary.Messaging;
 using CoreLibrary.Utilities;
 using ServerApp.Models;
 
-namespace ServerApp;
-
-/// <summary>
-/// Accepts new communicators, wires them into ClientConnections, and
-/// broadcasts messages to everyone else.
-/// </summary>
-public sealed class ChatServer
+namespace ServerApp
 {
-    private readonly UserManager _users = new();
-
-    public async Task AddClientAsync(Configuration cfg)
+    /// <summary>
+    /// Accepts new communicators, wires them into ClientConnections, and
+    /// broadcasts messages to everyone else.
+    /// </summary>
+    public sealed class ChatServer
     {
-        var comm = CommunicatorFactory.Create(cfg);
-        var conn = new ClientConnection(comm);
-        _users.Add(conn);
+        private readonly UserManager _users = new();
 
-        conn.Received += (_, m) => OnMessage(conn, m);
-
-        await conn.StartAsync();
-    }
-
-    private async void OnMessage(ClientConnection sender, Message m)
-    {
-        if (m.Type == MessageType.Exit)
+        public async Task AddClientAsync(Configuration cfg)
         {
-            _users.Remove(sender.Id);
-            return;
+            var comm = CommunicatorFactory.Create(cfg);
+            var conn = new ClientConnection(comm);
+            _users.Add(conn);
+
+            conn.Received += (_, m) => OnMessage(conn, m);
+
+            await conn.StartAsync();
         }
 
-        // broadcast
-        foreach (var other in _users.All.Where(c => c.Id != sender.Id))
+        private async void OnMessage(ClientConnection sender, Message m)
         {
-            try { await other.SendAsync(m); }
-            catch { /* swallow for now; cleanup on future exit */ }
+            if (m.Type == MessageType.Exit)
+            {
+                _users.Remove(sender.Id);
+                return;
+            }
+
+            // broadcast
+            foreach (var other in _users.All.Where(c => c.Id != sender.Id))
+            {
+                try { await other.SendAsync(m); }
+                catch { /* swallow for now; cleanup on future exit */ }
+            }
         }
     }
 }

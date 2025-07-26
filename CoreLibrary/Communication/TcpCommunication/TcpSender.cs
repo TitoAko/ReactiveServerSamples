@@ -4,48 +4,49 @@ using System.Text.Json;
 using CoreLibrary.Messaging;
 using CoreLibrary.Utilities;
 
-namespace CoreLibrary.Communication.TcpCommunication;
-
-public sealed class TcpSender : IDisposable
+namespace CoreLibrary.Communication.TcpCommunication
 {
-    private bool _disposed;
-    private readonly JsonSerializerOptions _json = new()
+    public sealed class TcpSender : IDisposable
     {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        Converters = { new MessageTypeConverter() }
-    };
-    private readonly TcpClient _tcp = new();
-    private readonly Configuration _cfg;
-    private bool _connected;
-
-    public TcpSender(Configuration cfg) => _cfg = cfg;
-
-    public async Task SendAsync(Message message, CancellationToken token = default)
-    {
-        if (string.IsNullOrEmpty(message.Content))
+        private bool _disposed;
+        private readonly JsonSerializerOptions _json = new()
         {
-            throw new ArgumentException("Empty payload", nameof(message));
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            Converters = { new MessageTypeConverter() }
+        };
+        private readonly TcpClient _tcp = new();
+        private readonly Configuration _cfg;
+        private bool _connected;
+
+        public TcpSender(Configuration cfg) => _cfg = cfg;
+
+        public async Task SendAsync(Message message, CancellationToken token = default)
+        {
+            if (string.IsNullOrEmpty(message.Content))
+            {
+                throw new ArgumentException("Empty payload", nameof(message));
+            }
+
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(nameof(TcpSender));
+            }
+
+            if (!_connected)
+            {
+                _tcp.Connect(_cfg.TargetAddress, _cfg.Port);
+                _connected = true;
+            }
+
+            string json = JsonSerializer.Serialize(message, _json);
+            byte[] buffer = Encoding.UTF8.GetBytes(json);
+            await _tcp.GetStream().WriteAsync(buffer, token).ConfigureAwait(false);
         }
 
-        if (_disposed)
+        public void Dispose()
         {
-            throw new ObjectDisposedException(nameof(TcpSender));
+            _disposed = true;
+            _tcp.Dispose();
         }
-
-        if (!_connected)
-        {
-            _tcp.Connect(_cfg.TargetAddress, _cfg.Port);
-            _connected = true;
-        }
-
-        string json = JsonSerializer.Serialize(message, _json);
-        byte[] buffer = Encoding.UTF8.GetBytes(json);
-        await _tcp.GetStream().WriteAsync(buffer, token).ConfigureAwait(false);
-    }
-
-    public void Dispose()
-    {
-        _disposed = true;
-        _tcp.Dispose();
     }
 }

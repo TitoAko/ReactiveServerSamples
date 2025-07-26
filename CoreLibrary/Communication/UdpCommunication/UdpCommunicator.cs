@@ -1,6 +1,5 @@
 ﻿using CoreLibrary.Messaging;
 using CoreLibrary.Utilities;
-using System.Threading.Tasks;
 
 namespace CoreLibrary.Communication.UdpCommunication
 {

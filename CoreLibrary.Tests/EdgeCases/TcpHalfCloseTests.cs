@@ -1,8 +1,6 @@
 ﻿using CoreLibrary.Communication.TcpCommunication;
 using CoreLibrary.Tests.TestInfrastructure;
-using CoreLibrary.Utilities;
 using System.Net.Sockets;
-using Xunit;
 
 namespace CoreLibrary.Tests.EdgeCases
 {
