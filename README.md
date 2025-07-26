@@ -142,7 +142,7 @@ Target coverage: **80 %**
 | ✅     | UDP & TCP transport parity             | Integration-tested            |
 | ⬜     | Distributed Store Prototype            | DynamoDB / Cosmos CRUD        |
 | ⬜     | Payment Flow Design doc                | Stripe idempotency, webhooks  |
-| ⬜     | Coverage → **80 %+**                   | edge-case unit tests          |
+| ✅     | Coverage → **80 %+**                   | edge-case unit tests          |
 | ⬜     | Docker **health-checks**               | `healthcheck:` blocks         |
 | ⬜     | Centralised **ILogger** pipeline       | console + JSON sink           |
 | ⬜     | WebSocket / SignalR gateway _(stretch)_ | optional front-end hook       |

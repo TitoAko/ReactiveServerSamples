@@ -13,7 +13,7 @@ Focus areas ⁠(highest ROI for reliability):
 - Guard clauses on size / emptiness / cancellation edge cases
 - App-level single-instance enforcement (`AppLock`)
 
-Current **coverage** (Coverlet): **≈ 78 %** → only a few edge tests remain to cross 80 %.
+Current **coverage** (Coverlet): **≈ 82 %** → tests crossed 80 %.
 
 ---
 
