@@ -1,6 +1,6 @@
 ﻿# ✅ CoreLibrary Test Coverage Plan
 
-This document tracks **unit** and **integration** test coverage goals for the CorePunk networking chat system.
+This document tracks **unit** and **integration** test coverage goals for the ReactiveServerSamples networking chat system.
 
 ---
 
@@ -26,7 +26,7 @@ Current **coverage** (Coverlet): **≈ 82 %** → tests crossed 80 %.
 | ✅ | Input Parsing             | `InputHandler`        | `/exit`, `/w`, generic text                                  | **Done** |
 | ✅ | Config & Port Helpers     | `Configuration`       | unique *ClientId*, `IsEndpointBusy`, record `with` cloning   | **Done** |
 | ✅ | Message Format            | `Message`             | JSON round-trip, converter recognises `TextMessage`          | **Done** |
-| ✅ | Factory Smoke            | `CommunicatorFactory` | correct enum → transport; throws on bad enum                 | **Done** |
+| ✅ | Factory Smoke             | `CommunicatorFactory` | correct enum → transport; throws on bad enum                 | **Done** |
 | ✅ | **UDP integration**       | `UdpCommunicator`     | single chat, `/exit`, order preservation                     | **Done** |
 | ✅ | Disposal Guard (UDP)      | `UdpCommunicator`     | dispose while receiving                                      | **Done** |
 | ✅ | **TCP integration**       | `TcpCommunicator`     | round-trip chat, start/stop smoke                            | **Done** |
