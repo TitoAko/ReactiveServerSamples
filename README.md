@@ -1,6 +1,6 @@
 [![.NET CI](https://github.com/TitoAko/ReactiveServerSamples/actions/workflows/dotnet.yml/badge.svg)](https://github.com/TitoAko/ReactiveServerSamples/actions/workflows/dotnet.yml)
 
-# 💬 CorePunk Chat / Server Samples — 2025 Edition
+# 💬 Reactive Server Chat / Server Samples — 2025 Edition
 
 **Author:** Emil Pirkl  
 **GitHub:** <https://github.com/TitoAko/ReactiveServerSamples>
