@@ -1,9 +1,9 @@
-[![.NET CI](https://github.com/TitoAko/corepunk-server-samples/actions/workflows/dotnet.yml/badge.svg)](https://github.com/TitoAko/corepunk-server-samples/actions/workflows/dotnet.yml)
+[![.NET CI](https://github.com/TitoAko/ReactiveServerSamples/actions/workflows/dotnet.yml/badge.svg)](https://github.com/TitoAko/ReactiveServerSamples/actions/workflows/dotnet.yml)
 
 # 💬 CorePunk Chat / Server Samples — 2025 Edition
 
 **Author:** Emil Pirkl  
-**GitHub:** <https://github.com/TitoAko/corepunk-server-samples>
+**GitHub:** <https://github.com/TitoAko/ReactiveServerSamples>
 
 A modular **.NET 8** client–server chat and MMO backend playground designed to showcase modern networking, async/await, test-driven refactor, clean architecture and Docker workflow.
 
