@@ -42,7 +42,7 @@ This repo **will** contain three proof-of-concept sub-systems:
 | **Pluggable transport** | `ICommunicator` switched by enum → UDP *and* TCP fully implemented & integration-tested. |
 | **Async-first API** | `StartAsync`, `SendMessageAsync`, `MessageReceived` events with CancellationToken everywhere. |
 | **Clean DTO** | Single `Message` record + `IMessageType` converter (no reflection). |
-| **CI / Coverage** | GitHub Actions build + test badge, Coverlet collector (currently ~72 %). |
+| **CI / Coverage** | GitHub Actions build + test badge, Coverlet collector (currently ~82 %). |
 | **Docker-ready** | Multi-stage Dockerfiles; `docker compose up --build` spins server + 2 clients automatically. |
 | **Front-end ready** | Same ICommunicator API can back a WPF MVVM UI, a Blazor component, or a React/SignalR client without touching CoreLibrary. |
 | **Extensible** | Roadmap items for WebSockets, health-checks, UI front-end. |
