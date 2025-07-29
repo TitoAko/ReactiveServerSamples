@@ -2,7 +2,7 @@ services:
   server:
     build:
       context: .
-      dockerfile: CorePunkServerSamples/Dockerfile
+      dockerfile: ServerAppSamples/Dockerfile
     container_name: chat-server
     ports:
       - "9000:9000/udp"
@@ -14,7 +14,7 @@ services:
   client1:
     build:
       context: .
-      dockerfile: CorePunkClientSamples/Dockerfile
+      dockerfile: ClientAppSamples/Dockerfile
     depends_on: [server]
     container_name: chat-client-1
     command: ["dotnet", "ClientApp.dll",
@@ -25,7 +25,7 @@ services:
   client2:
     build:
       context: .
-      dockerfile: CorePunkClientSamples/Dockerfile
+      dockerfile: ClientAppSamples/Dockerfile
     depends_on: [server]
     container_name: chat-client-2
     command: ["dotnet", "ClientApp.dll", "server", "9000"]

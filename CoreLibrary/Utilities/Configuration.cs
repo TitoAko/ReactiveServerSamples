@@ -29,7 +29,7 @@ namespace CoreLibrary.Utilities
         public string ClientId { get; init; } = $"cli-{Guid.NewGuid():N}";
         /* ---------- legacy aliases (AppLock, etc.) --------- */
         public AppType AppType => Role == NodeRole.Server ? AppType.Server : AppType.Client;
-        public string AppName { get; init; } = "CorePunkChat";
+        public string AppName { get; init; } = "ReactiveChat";
         public string Username => ClientId;
 
         /* ----------------- helpers ------------------ */

@@ -4,11 +4,11 @@ WORKDIR /src
 
 # copy rest of source – any .cs edit invalidates this layer
 COPY . .
-RUN dotnet publish CorePunkServerSamples/ServerApp.csproj -c Release -o /app
+RUN dotnet publish ServerAppSamples/ServerApp.csproj -c Release -o /app
 
 # copy solution & csproj first – cache restore
 COPY *.sln .
-COPY CorePunkServerSamples/ServerApp.csproj CorePunkServerSamples/
+COPY ServerAppSamples/ServerApp.csproj ServerAppSamples/
 RUN dotnet restore
 
 # ---------- runtime ----------
