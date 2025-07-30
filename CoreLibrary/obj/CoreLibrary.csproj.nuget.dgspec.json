@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\emilp\\source\\repos\\CorePunkServerSamples\\CoreLibrary\\CoreLibrary.csproj": {}
+    "C:\\Users\\emilp\\source\\repos\\ReactiveServerSamples\\CoreLibrary\\CoreLibrary.csproj": {}
   },
   "projects": {
-    "C:\\Users\\emilp\\source\\repos\\CorePunkServerSamples\\CoreLibrary\\CoreLibrary.csproj": {
+    "C:\\Users\\emilp\\source\\repos\\ReactiveServerSamples\\CoreLibrary\\CoreLibrary.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\emilp\\source\\repos\\CorePunkServerSamples\\CoreLibrary\\CoreLibrary.csproj",
+        "projectUniqueName": "C:\\Users\\emilp\\source\\repos\\ReactiveServerSamples\\CoreLibrary\\CoreLibrary.csproj",
         "projectName": "CoreLibrary",
-        "projectPath": "C:\\Users\\emilp\\source\\repos\\CorePunkServerSamples\\CoreLibrary\\CoreLibrary.csproj",
+        "projectPath": "C:\\Users\\emilp\\source\\repos\\ReactiveServerSamples\\CoreLibrary\\CoreLibrary.csproj",
         "packagesPath": "C:\\Users\\emilp\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\emilp\\source\\repos\\CorePunkServerSamples\\CoreLibrary\\obj\\",
+        "outputPath": "C:\\Users\\emilp\\source\\repos\\ReactiveServerSamples\\CoreLibrary\\obj\\",
         "projectStyle": "PackageReference",
         "centralPackageVersionsManagementEnabled": true,
         "fallbackFolders": [

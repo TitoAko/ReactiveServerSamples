@@ -1,7 +1,4 @@
-﻿using System;
-using System.Threading;
-
-namespace CoreLibrary.Utilities
+﻿namespace CoreLibrary.Utilities
 {
     /// <summary>
     /// Ensures single-instance enforcement based on a combination of user and app configuration.

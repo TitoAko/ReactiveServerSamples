@@ -14,7 +14,7 @@ namespace CoreLibrary.Communication.UdpCommunication
     {
         private readonly UdpClient _udpClient;
         private readonly JsonSerializerOptions _jsonSerializerOptions;
-        private readonly Configuration _configurationg;
+        private readonly Configuration _configuration;
         private readonly int _remotePort;
         private bool _disposed;
         private bool _connected;
@@ -24,13 +24,13 @@ namespace CoreLibrary.Communication.UdpCommunication
         /// </summary>
         public UdpSender(Configuration configuration, int? remotePort = null)
         {
-            _configurationg = configuration;
+            _configuration = configuration;
             _remotePort = remotePort ?? configuration.Port;     // ← use other side’s port when supplied
 
             var host = configuration.TargetAddress;
             if (host == "0.0.0.0" || host == "::0")
             {
-                throw new ArgumentException("Cannot send to an unspecified address", nameof(_configurationg.TargetAddress));
+                throw new ArgumentException("Cannot send to an unspecified address", nameof(_configuration.TargetAddress));
             }
 
             _udpClient = new UdpClient();
@@ -61,7 +61,7 @@ namespace CoreLibrary.Communication.UdpCommunication
 
             if (!_connected)
             {
-                _udpClient.Connect(_configurationg.TargetAddress, _remotePort);
+                _udpClient.Connect(_configuration.TargetAddress, _remotePort);
                 _connected = true;
             }
 

@@ -11,3 +11,16 @@ C:\Users\emilp\source\repos\CorePunkServerSamples\CoreLibrary\obj\Debug\net8.0\C
 C:\Users\emilp\source\repos\CorePunkServerSamples\CoreLibrary\obj\Debug\net8.0\refint\CoreLibrary.dll
 C:\Users\emilp\source\repos\CorePunkServerSamples\CoreLibrary\obj\Debug\net8.0\CoreLibrary.pdb
 C:\Users\emilp\source\repos\CorePunkServerSamples\CoreLibrary\obj\Debug\net8.0\ref\CoreLibrary.dll
+C:\Users\emilp\source\repos\ReactiveServerSamples\CoreLibrary\bin\Debug\net8.0\CoreLibrary.deps.json
+C:\Users\emilp\source\repos\ReactiveServerSamples\CoreLibrary\bin\Debug\net8.0\CoreLibrary.dll
+C:\Users\emilp\source\repos\ReactiveServerSamples\CoreLibrary\bin\Debug\net8.0\CoreLibrary.pdb
+C:\Users\emilp\source\repos\ReactiveServerSamples\CoreLibrary\obj\Debug\net8.0\CoreLibrary.csproj.AssemblyReference.cache
+C:\Users\emilp\source\repos\ReactiveServerSamples\CoreLibrary\obj\Debug\net8.0\CoreLibrary.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\emilp\source\repos\ReactiveServerSamples\CoreLibrary\obj\Debug\net8.0\CoreLibrary.AssemblyInfoInputs.cache
+C:\Users\emilp\source\repos\ReactiveServerSamples\CoreLibrary\obj\Debug\net8.0\CoreLibrary.AssemblyInfo.cs
+C:\Users\emilp\source\repos\ReactiveServerSamples\CoreLibrary\obj\Debug\net8.0\CoreLibrary.csproj.CoreCompileInputs.cache
+C:\Users\emilp\source\repos\ReactiveServerSamples\CoreLibrary\obj\Debug\net8.0\CoreLibrary.sourcelink.json
+C:\Users\emilp\source\repos\ReactiveServerSamples\CoreLibrary\obj\Debug\net8.0\CoreLibrary.dll
+C:\Users\emilp\source\repos\ReactiveServerSamples\CoreLibrary\obj\Debug\net8.0\refint\CoreLibrary.dll
+C:\Users\emilp\source\repos\ReactiveServerSamples\CoreLibrary\obj\Debug\net8.0\CoreLibrary.pdb
+C:\Users\emilp\source\repos\ReactiveServerSamples\CoreLibrary\obj\Debug\net8.0\ref\CoreLibrary.dll

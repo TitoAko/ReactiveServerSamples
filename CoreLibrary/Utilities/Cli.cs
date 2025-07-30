@@ -1,28 +1,29 @@
-﻿namespace CoreLibrary.Utilities;
-
-/// <summary>Super-lightweight CLI switch reader:  --key value</summary>
-public sealed class Cli
+﻿namespace CoreLibrary.Utilities
 {
-    private readonly Dictionary<string, string> _map = new(StringComparer.OrdinalIgnoreCase);
-
-    public Cli(string[] args)
+    /// <summary>Super-lightweight CLI switch reader:  --key value</summary>
+    public sealed class Cli
     {
-        for (int i = 0; i + 1 < args.Length; i += 2)
+        private readonly Dictionary<string, string> _map = new(StringComparer.OrdinalIgnoreCase);
+
+        public Cli(string[] args)
         {
-            if (args[i].StartsWith("--"))
+            for (int i = 0; i + 1 < args.Length; i += 2)
             {
-                _map[args[i]] = args[i + 1];
+                if (args[i].StartsWith("--"))
+                {
+                    _map[args[i]] = args[i + 1];
+                }
             }
         }
-    }
 
-    public string Get(string key, string fallback)
-    {
-        return _map.TryGetValue(key, out var v) ? v : fallback;
-    }
+        public string Get(string key, string fallback)
+        {
+            return _map.TryGetValue(key, out var v) ? v : fallback;
+        }
 
-    public int Get(string key, int fallback)
-    {
-        return int.TryParse(Get(key, ""), out var n) ? n : fallback;
+        public int Get(string key, int fallback)
+        {
+            return int.TryParse(Get(key, ""), out var n) ? n : fallback;
+        }
     }
 }

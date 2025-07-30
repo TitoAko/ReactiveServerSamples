@@ -1,5 +1,4 @@
-﻿// CoreLibrary/IO/OutputHandler.cs
-using CoreLibrary.Messaging;
+﻿using CoreLibrary.Messaging;
 
 namespace CoreLibrary.IO
 {

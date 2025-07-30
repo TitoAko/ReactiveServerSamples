@@ -1,5 +1,6 @@
 ﻿using CoreLibrary.Communication.TcpCommunication;
 using CoreLibrary.Communication.UdpCommunication;
+using CoreLibrary.Interfaces;
 using CoreLibrary.Utilities;
 
 namespace CoreLibrary.Factories

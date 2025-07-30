@@ -1,4 +1,5 @@
 ﻿using CoreLibrary.Communication.UdpCommunication;   // Communicator
+using CoreLibrary.Interfaces;
 using CoreLibrary.Utilities;                        // Configuration
 
 namespace ClientApp
@@ -16,7 +17,7 @@ namespace ClientApp
                 BindAddress = commandLineParser.Get("--bind", "0.0.0.0"),
                 TargetAddress = commandLineParser.Get("--target", "server"),
                 Port = commandLineParser.Get("--port", 9000),
-                Role = NodeRole.Server
+                Role = NodeRole.Client
             };
 
             ICommunicator comm = new UdpCommunicator(configuration);

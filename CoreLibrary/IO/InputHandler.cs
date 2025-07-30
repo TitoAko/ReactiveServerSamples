@@ -1,4 +1,4 @@
-﻿// CoreLibrary/IO/InputHandler.cs
+﻿using CoreLibrary.Interfaces;
 using CoreLibrary.Messaging;
 
 namespace CoreLibrary.IO

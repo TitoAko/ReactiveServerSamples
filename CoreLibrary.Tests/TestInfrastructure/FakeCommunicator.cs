@@ -1,4 +1,4 @@
-﻿// CoreLibrary.Tests/TestInfrastructure/FakeCommunicator.cs
+﻿using CoreLibrary.Interfaces;
 using CoreLibrary.Messaging;
 
 namespace CoreLibrary.Tests.TestInfrastructure
