@@ -14,7 +14,7 @@ namespace CoreLibrary.Communication.TcpCommunication
     /// <see cref="TcpSender"/> (client side).  Tests await <see cref="Started"/>
     /// to know when the listener socket is bound.
     /// </summary>
-    public sealed class TcpCommunicator : ICommunicator, IDisposable
+    public sealed class TcpCommunicator : ICommunicator
     {
         private readonly TcpListener _listener;
         private readonly TcpSender _sender;
@@ -95,10 +95,13 @@ namespace CoreLibrary.Communication.TcpCommunication
         }
         #endregion
         #region Cleanup
-        public void Dispose()
+        public ValueTask DisposeAsync()
         {
-            _listener.Stop();           // causes AcceptTcpClientAsync to throw
+            // Note: TcpListener does not implement IAsyncDisposable
+            _listener.Stop(); // synchronous close
+            // TODO: consider disposing _sender if it implements IAsyncDisposable
             _sender.Dispose();
+            return ValueTask.CompletedTask;       // satisfy the async contract
         }
         #endregion
     }

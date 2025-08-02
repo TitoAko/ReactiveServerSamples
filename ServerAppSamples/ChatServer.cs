@@ -7,38 +7,56 @@ using ServerApp.Models;
 namespace ServerApp
 {
     /// <summary>
-    /// Accepts new communicators, wires them into ClientConnections, and
-    /// broadcasts messages to everyone else.
+    /// Manages client connections and fan-out broadcasting.
     /// </summary>
     public sealed class ChatServer
     {
         private readonly UserManager _users = new();
 
-        public async Task AddClientAsync(Configuration configuration)
+        public void AddClient(Configuration configuration)
         {
             var communicator = CommunicatorFactory.Create(configuration);
             var clientConnection = new ClientConnection(communicator);
+
             _users.Add(clientConnection);
+            clientConnection.Received += OnMessageAsync;   // event handler changed
 
-            clientConnection.Received += (_, message) => OnMessage(clientConnection, message);
-
-            await clientConnection.StartAsync();
+            // 🟢 fire-and-forget so *this* call returns immediately
+            _ = clientConnection.StartAsync().ContinueWith(t =>
+            {
+                if (t.Exception is not null)
+                {
+                    Console.Error.WriteLine(t.Exception);   // TODO: proper logging
+                }
+            });
         }
 
-        private async void OnMessage(ClientConnection sender, Message message)
+        private async void OnMessageAsync(object? sender, Message message)
         {
-            if (message.Type == MessageType.Exit)
+            if (sender is not ClientConnection from)
             {
-                _users.Remove(sender.Id);
                 return;
             }
 
-            // broadcast
-            foreach (var targetClient in _users.All.Where(clientConnection => clientConnection.Id != sender.Id))
+            if (message.Type == MessageType.Exit)
             {
-                try { await targetClient.SendAsync(message); }
-                catch { /* swallow for now; cleanup on future exit */ }
+                try
+                {
+                    await from.DisposeAsync();
+                }
+                catch
+                {
+                    // ignore for now, but TODO: structured logging
+                }
+                _users.Remove(from.Id);
+                return;
             }
+
+            var sendTasks = _users.All
+                                          .Where(c => c.Id != from.Id)
+                                          .Select(c => c.SendAsync(message));
+            try { await Task.WhenAll(sendTasks); }
+            catch { /* TODO: structured logging */ }
         }
     }
 }

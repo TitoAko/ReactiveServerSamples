@@ -1,22 +1,20 @@
-﻿using CoreLibrary.Utilities;
+﻿using CoreLibrary.Tests.TestInfrastructure;
+using CoreLibrary.Utilities;
 
 namespace CoreLibrary.Tests.EdgeCases
 {
     public class AppLockReentryTests
     {
         [Fact]
-        public void SecondInstance_IsBlocked()
+        public void OnlyOneInstancePerRoleAndPort()
         {
-            var configuration = new Configuration { Port = 12345 };   // static port
+            var cfg = TestConfig.TcpLoopback(12345);
 
-            var lock1 = new AppLock();
-            Assert.False(lock1.IsInstanceRunning(configuration));
+            using var first = new AppLock(cfg);
+            Assert.False(first.IsInstanceRunning);   // we are the first instance
 
-            var lock2 = new AppLock();
-            Assert.True(lock2.IsInstanceRunning(configuration));
-
-            lock1.ReleaseLock();
-            lock2.ReleaseLock();
+            using var second = new AppLock(cfg);
+            Assert.True(second.IsInstanceRunning);   // detects prior holder
         }
     }
 }

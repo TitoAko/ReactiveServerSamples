@@ -1,0 +1,58 @@
+[33mffb50c6[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mfix/client-app-role[m[33m, [m[1;31morigin/master[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmaster[m[33m)[m Cosmetic changes before re-haul
+[33m1c43548[m Finalize rename to ReactiveServerSamples; remove all residual CorePunk references
+[33m65a1eb4[m Rename solution folder and sub-projects: remove CorePunk references
+[33mce9f9a0[m Update README.md
+[33m6315301[m Update TestPlan.md
+[33m1081594[m Update README.md
+[33md1d7632[m Update README.md
+[33mdd911bd[m git commit -m "docs: update TestPlan and README to reflect >80% test coverage
+[33m21611b8[m fix: naming and formatting
+[33m2647b6f[m fix (namespaces): Replaced file-scoped namespaces with block with bracers style to have consistency throughout the code.
+[33m04c8548[m test(edge): don't start client listener in TcpZeroLengthPayloadTests  avoids port clash and hanging constructor
+[33m035e765[m docs(test-plan): refresh coverage table after edge-case suite (78 %)
+[33m92f5144[m fix(tcp): reject zero-length chat payloads, update edge-case test
+[33mc814a10[m test(edge-cases): add TCP/UDP guard tests and unify Configuration record
+[33mb98b9af[m Update TestPlan.md file
+[33m4f86728[m Update README.md file
+[33ma6b1404[m fix(tcp & tests): make TCP listener non-blocking, add FakeCommunicator, and green all tests
+[33m58e418c[m feat(tcp): sender/receiver parity with UDP and two passing integration tests
+[33m2dcc483[m fix(core): alias IpAddress, add minimal Cli parser, clear Tcp/AppLock build errors
+[33m1d0cb25[m feat(docker): make server/container networking work
+[33mab641e3[m feat(server): add ClientConnection model to project
+[33m1af1395[m feat: docker-compose demo with server + 2 clients
+[33m338fa59[m fix: Udp message size
+[33m5ae2f34[m feat: add Codecov coverage badge
+[33m74188cf[m Merge branch 'master' of https://github.com/TitoAko/CorePunkServerSamples
+[33mc4f93dd[m Update README.md
+[33mab3fcf4[m Create dotnet.yml
+[33m9985fb4[m Update README.md
+[33m8abb316[m Merge branch 'master' of https://github.com/TitoAko/CorePunkServerSamples
+[33m840375e[m Create dotnet.yml
+[33mba7b4c3[m feat: major re-do of the code. The changes will be included in a new README.md
+[33m1b9b3db[m docs: complete XML documentation for key components
+[33m87920ad[m test: add unit tests for Message structure and processing delegation
+[33m4da3184[m feat: implement async TCP server in TcpCommunicator
+[33m3cc8812[m refactor: migrate UdpSender and UdpCommunicator to async Task-based messaging
+[33m5e764d1[m test(input): update InputHandler to preserve message formatting and align test assertions
+[33m3adc304[m refactor: enable polymorphic message deserialization in UdpReceiver
+[33m3fc9876[m fix: make AppLock mutex lifecycle safe and disposable
+[33m25a1bba[m test: add and refactor AppLock unit tests for single-instance enforcement
+[33m4fa07ae[m docs: added TestPlan.md to track test coverage progress
+[33m065b4fd[m[33m ([m[1;33mtag: [m[1;33mv1.0.0[m[33m)[m Merge branch 'feature/readme-improvements'
+[33m4f079de[m docs: README.md added to the project, fixed formatting and architecture diagram rendering
+[33m7c1538d[m docs: generated README.md file
+[33m6a65dec[m feat: fixed unintentional double communicator init in ClientAppInitializer.
+[33m27f9994[m feat: updated ClientAppInitializer to utilize CommunicatorFactory
+[33m1ba4890[m Ignore for now
+[33m3b55fbf[m feat: Introduce CommunicatorFactory and unify dynamic communicator creation
+[33m6f1aedc[m Refactor: Communication Abstraction, Server Lifecycle, and RX Management
+[33mf473a09[m Refactor UdpCommunicator and update client-server logic to use two UdpClient objects, due to multithreading limitations of a single object.
+[33mc5865cc[m Enhance UDP communication and resource management
+[33m5a37f02[m Refactor chat client initialization and input handling
+[33m26cd49a[m Refactor UDP communication and server initialization
+[33m9241e73[m Refactored message processing logic.
+[33m290d950[m Refactor communication and configuration structure
+[33m29528e2[m Enhance communication handling and resource management
+[33mc81dbaf[m Fixed various bugs
+[33m62871b1[m Add project files.
+[33me58af2a[m Add .gitattributes and .gitignore.

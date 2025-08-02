@@ -44,7 +44,7 @@ namespace ClientApp
         public void Dispose()
         {
             _cts.Cancel();
-            _comm.Dispose();
+            _comm.DisposeAsync();
         }
     }
 }

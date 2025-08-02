@@ -3,23 +3,18 @@ using CoreLibrary.Communication.UdpCommunication;
 using CoreLibrary.Interfaces;
 using CoreLibrary.Utilities;
 
-namespace CoreLibrary.Factories
+namespace CoreLibrary.Factories;
+
+public static class CommunicatorFactory
 {
-    /// <summary>
-    /// Creates the right <see cref="ICommunicator"/> for the given config.
-    /// Reflection- and DI-free so it compiles instantly in small samples.
-    /// </summary>
-    public static class CommunicatorFactory
+    public static ICommunicator Create(Configuration cfg)
     {
-        public static ICommunicator Create(Configuration configuration)
+        return cfg.Communicator.ToLowerInvariant() switch
         {
-            return configuration.Transport switch
-            {
-                TransportKind.Udp => new UdpCommunicator(configuration),
-                TransportKind.Tcp => new TcpCommunicator(configuration),
-                _ => throw new NotSupportedException(
-                         $"Transport '{configuration.Transport}' not recognised.")
-            };
-        }
+            "udpcommunicator" => new UdpCommunicator(cfg),
+            "tcpcommunicator" => new TcpCommunicator(cfg),
+            _ => throw new ArgumentException(
+                     $"Unsupported communicator: {cfg.Communicator}", nameof(cfg))
+        };
     }
 }

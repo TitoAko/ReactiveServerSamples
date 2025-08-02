@@ -35,7 +35,19 @@ namespace ServerApp.Models
         public void Dispose()
         {
             _cancellationTokenSource.Cancel();
-            _communicator.Dispose();
+            _communicator.DisposeAsync();
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            if (_communicator is IAsyncDisposable asyncComm)
+            {
+                await asyncComm.DisposeAsync();
+            }
+            else
+            {
+                _communicator?.DisposeAsync();
+            }
         }
     }
 }

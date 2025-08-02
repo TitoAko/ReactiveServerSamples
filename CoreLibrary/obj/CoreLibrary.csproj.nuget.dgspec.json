@@ -55,14 +55,24 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "dependencies": {
+            "Microsoft.Extensions.Configuration.Binder": {
+              "target": "Package",
+              "version": "[9.0.7, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Extensions.Configuration.CommandLine": {
+              "target": "Package",
+              "version": "[9.0.7, )",
+              "versionCentrallyManaged": true
+            },
             "Microsoft.Extensions.Configuration.EnvironmentVariables": {
               "target": "Package",
-              "version": "[9.0.6, )",
+              "version": "[9.0.7, )",
               "versionCentrallyManaged": true
             },
             "Microsoft.Extensions.Configuration.Json": {
               "target": "Package",
-              "version": "[9.0.6, )",
+              "version": "[9.0.7, )",
               "versionCentrallyManaged": true
             },
             "System.Reactive": {
@@ -74,10 +84,12 @@
           "centralPackageVersions": {
             "coverlet.collector": "6.0.4",
             "FluentAssertions": "8.5.0",
-            "Microsoft.Extensions.Configuration": "9.0.6",
-            "Microsoft.Extensions.Configuration.EnvironmentVariables": "9.0.6",
-            "Microsoft.Extensions.Configuration.FileExtensions": "9.0.6",
-            "Microsoft.Extensions.Configuration.Json": "9.0.6",
+            "Microsoft.Extensions.Configuration": "9.0.7",
+            "Microsoft.Extensions.Configuration.Binder": "9.0.7",
+            "Microsoft.Extensions.Configuration.CommandLine": "9.0.7",
+            "Microsoft.Extensions.Configuration.EnvironmentVariables": "9.0.7",
+            "Microsoft.Extensions.Configuration.FileExtensions": "9.0.7",
+            "Microsoft.Extensions.Configuration.Json": "9.0.7",
             "Microsoft.NET.Test.Sdk": "17.14.1",
             "Moq": "4.20.72",
             "System.Reactive": "6.0.1",

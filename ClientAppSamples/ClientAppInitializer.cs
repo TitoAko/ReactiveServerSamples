@@ -7,22 +7,24 @@ namespace ClientApp
     internal static class ClientAppInitializer
     {
         /// <summary>
-        /// Creates a communicator, spins up the CLI, blocks until user types "exit".
+        /// Loads configuration, creates a communicator, spins up the CLI, and blocks until user exits.
         /// </summary>
         public static async Task RunAsync(string[] args)
         {
-            var commandLineParser = new Cli(args);           // use any simple CLI parser you like
-            var configuration = new Configuration
+            // 1️⃣  Load layered configuration (JSON → ENV → CLI)
+            var cfg = ConfigurationLoader.Load(args);
+
+            // 2️⃣  Guard-rail: force correct role
+            if (cfg.Role != NodeRole.Client)
             {
-                BindAddress = commandLineParser.Get("--bind", "0.0.0.0"),
-                TargetAddress = commandLineParser.Get("--target", "server"),
-                Port = commandLineParser.Get("--port", 9000),
-                Role = NodeRole.Client
-            };
+                cfg = cfg with { Role = NodeRole.Client };
+            }
 
-            ICommunicator comm = new UdpCommunicator(configuration);
+            // 3️⃣  Create communicator
+            ICommunicator comm = new UdpCommunicator(cfg);
 
-            using var chatClient = new ChatClient(comm, configuration.ClientId);
+            // 4️⃣  Spin up client
+            using var chatClient = new ChatClient(comm, cfg.Username);
             await chatClient.RunAsync();
         }
     }
