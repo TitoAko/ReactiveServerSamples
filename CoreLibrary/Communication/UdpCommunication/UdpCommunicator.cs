@@ -4,42 +4,41 @@ using CoreLibrary.Utilities;
 
 namespace CoreLibrary.Communication.UdpCommunication
 {
-    /// <summary>
-    /// “Façade” that glues <see cref="UdpSender"/> and <see cref="UdpReceiver"/>
-    /// to satisfy <see cref="ICommunicator"/>.
-    /// </summary>
-    public sealed class UdpCommunicator : ICommunicator
+    public sealed class UdpCommunicator : ICommunicator, IAsyncDisposable
     {
         private readonly UdpSender _sender;
         private readonly UdpReceiver _receiver;
-        private readonly CancellationTokenSource _cancellationTokenSource = new();
+        private bool _disposed;
+
+        public UdpCommunicator(Configuration cfg, int? remotePort = null)
+        {
+            _sender = new UdpSender(cfg, remotePort);
+            _receiver = new UdpReceiver(cfg);
+            _receiver.Received += (_, message) => MessageReceived?.Invoke(this, message);
+        }
 
         public event EventHandler<Message>? MessageReceived;
 
-        public UdpCommunicator(Configuration configuration, int? remotePort = null)
+        public Task SendMessageAsync(Message msg, CancellationToken t = default)
         {
-            _sender = new UdpSender(configuration, remotePort ?? configuration.Port);
-            _receiver = new UdpReceiver(configuration);
-            _receiver.MessageReceived += (_, message) => MessageReceived?.Invoke(this, message);
+            return _sender.SendAsync(msg, t);
         }
 
-        public Task SendMessageAsync(Message message,
-                                     CancellationToken token = default)
+        public Task StartAsync(CancellationToken t = default)
         {
-            return _sender.SendMessageAsync(message, token);
+            return _receiver.ListenAsync(t);
         }
 
-        public async Task StartAsync(CancellationToken token = default)
+        public async ValueTask DisposeAsync()
         {
-            using var linked = CancellationTokenSource.CreateLinkedTokenSource(token, _cancellationTokenSource.Token);
-            await _receiver.ListenAsync(linked.Token).ConfigureAwait(false);
-        }
+            if (_disposed)
+            {
+                return;
+            }
 
-        public void Dispose()
-        {
-            _cancellationTokenSource.Cancel();
-            _receiver.Dispose();
-            _sender.Dispose();
+            _disposed = true;
+            await _sender.DisposeAsync();
+            await _receiver.DisposeAsync();
         }
     }
 }

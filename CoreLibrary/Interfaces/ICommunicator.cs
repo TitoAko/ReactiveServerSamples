@@ -5,7 +5,7 @@ namespace CoreLibrary.Interfaces
     /// <summary>
     /// Transport‑agnostic contract for chat traffic.
     /// </summary>
-    public interface ICommunicator : IDisposable
+    public interface ICommunicator : IAsyncDisposable
     {
         /// <summary>
         /// Sends <paramref name="message"/> asynchronously.

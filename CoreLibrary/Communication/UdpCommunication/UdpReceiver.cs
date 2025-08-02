@@ -1,81 +1,43 @@
 ﻿using System.Net;
 using System.Net.Sockets;
-using System.Text;
 using System.Text.Json;
+
 using CoreLibrary.Messaging;
 using CoreLibrary.Utilities;
 
 namespace CoreLibrary.Communication.UdpCommunication
 {
-    /// <summary>
-    /// Listens for UDP datagrams and raises <see cref="MessageReceived"/>.
-    /// </summary>
-    public class UdpReceiver : IDisposable
+    public sealed class UdpReceiver : IAsyncDisposable
     {
-        private readonly UdpClient _udpClient;
-        private readonly JsonSerializerOptions _jsonOptions;
+        private readonly UdpClient _client;
+        private bool _disposed;
 
-        /// <summary>
-        /// Fired when a valid message is received and parsed.
-        /// </summary>
-        public event EventHandler<Message>? MessageReceived;
+        public event EventHandler<Message>? Received;
 
-        /// <summary>
-        /// Initializes the UDP receiver and prepares it for asynchronous listening.
-        /// </summary>
-        public UdpReceiver(Configuration configuration)
+        public UdpReceiver(Configuration cfg)
         {
-            var local = new IPEndPoint(
-                IPAddress.Any,
-                configuration.Port);
-
-            _udpClient = new UdpClient(local);
-
-            _jsonOptions = new JsonSerializerOptions
-            {
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                Converters = { new MessageTypeConverter() }
-            };
+            _client = new UdpClient(new IPEndPoint(
+                IPAddress.Parse(cfg.BindAddress), cfg.Port));
         }
 
-        /// <summary>
-        /// Starts the infinite read loop. Call once, ideally from a background Task.
-        /// </summary>
-        public async Task ListenAsync(CancellationToken cancellationToken = default)
+        public async Task ListenAsync(CancellationToken token = default)
         {
-            while (!cancellationToken.IsCancellationRequested)
+            while (!token.IsCancellationRequested)
             {
-                try
-                {
-                    UdpReceiveResult result =
-                        await _udpClient.ReceiveAsync(cancellationToken).ConfigureAwait(false);
-
-                    string json = Encoding.UTF8.GetString(result.Buffer);
-                    var message = JsonSerializer.Deserialize<Message>(json, _jsonOptions);
-
-                    if (message is not null)
-                    {
-                        MessageReceived?.Invoke(this, message);
-                    }
-                }
-                catch (OperationCanceledException)
-                {
-                    // normal shutdown, swallow silently
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"UDP receive error: {ex}");
-                    // optional: raise an error event so the app can decide what to do
-                }
+                var result = await _client.ReceiveAsync(token);
+                var msg = JsonSerializer.Deserialize<Message>(result.Buffer)!;
+                Received?.Invoke(this, msg);
             }
         }
 
-        /// <summary>
-        /// Releases all internal resources.
-        /// </summary>
-        public void Dispose()
+        public ValueTask DisposeAsync()
         {
-            _udpClient.Dispose();
+            if (!_disposed)
+            {
+                _disposed = true;
+                _client.Dispose();
+            }
+            return ValueTask.CompletedTask;
         }
     }
 }
