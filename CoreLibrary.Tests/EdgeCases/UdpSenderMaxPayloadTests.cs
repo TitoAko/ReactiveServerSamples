@@ -17,10 +17,11 @@ namespace CoreLibrary.Tests.EdgeCases
             // 60 001 ASCII chars → 60 001 bytes
             var bigMessage = new Message("cli", new string('x', 60_001));
 
-            var ex = await Assert.ThrowsAsync<ArgumentException>(() =>
-                communicator.SendMessageAsync(bigMessage).TimeoutAfter(TimeSpan.FromSeconds(1)));
-
-            ex.Message.Should().Contain("exceeds 60 kB");
+            _ = await communicator
+                .Invoking(s => s.SendMessageAsync(bigMessage))
+                .Should()
+                .ThrowAsync<ArgumentException>()
+                .WithMessage("*60 kB exceeded*");
         }
     }
 }

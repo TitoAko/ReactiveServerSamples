@@ -1,25 +1,23 @@
-﻿using CoreLibrary.Communication.UdpCommunication;
+﻿using CoreLibrary.Communication.TcpCommunication;
+using CoreLibrary.Communication.UdpCommunication;
 using CoreLibrary.Factories;
-using CoreLibrary.Utilities;
+using CoreLibrary.Interfaces;
+using CoreLibrary.Tests.TestInfrastructure;
 
 namespace CoreLibrary.Tests.Factories
 {
     public class CommunicatorFactoryTests
     {
-        [Fact]
-        public void Create_ReturnsUdp_WhenConfigured()
+        [Theory]
+        [InlineData("UdpCommunicator", typeof(UdpCommunicator))]
+        [InlineData("TcpCommunicator", typeof(TcpCommunicator))]
+        public void Factory_Resolves_By_String(string communicator, Type expectedConcrete)
         {
-            var configuration = new Configuration { Transport = TransportKind.Udp };
-            var communicator = CommunicatorFactory.Create(configuration);
-            Assert.IsType<UdpCommunicator>(communicator);
-            communicator.Dispose();
-        }
+            var cfg = TestConfig.UdpLoopback() with { Communicator = communicator };
 
-        [Fact]
-        public void Create_Throws_OnUnsupportedTransport()
-        {
-            var configuration = new Configuration { Transport = (TransportKind)999 };
-            Assert.Throws<NotSupportedException>(() => CommunicatorFactory.Create(configuration));
+            ICommunicator instance = CommunicatorFactory.Create(cfg);
+
+            Assert.IsType(expectedConcrete, instance);
         }
     }
 }

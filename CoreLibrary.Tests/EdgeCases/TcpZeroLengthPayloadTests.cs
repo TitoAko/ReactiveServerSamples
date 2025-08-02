@@ -34,8 +34,8 @@ namespace CoreLibrary.Tests.EdgeCases
 
         public Task DisposeAsync()
         {
-            _server?.Dispose();
-            _client?.Dispose();
+            _server?.DisposeAsync();
+            _client?.DisposeAsync();
             return Task.CompletedTask;
         }
     }

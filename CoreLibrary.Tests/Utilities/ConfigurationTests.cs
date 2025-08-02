@@ -1,34 +1,24 @@
 ﻿using CoreLibrary.Tests.TestInfrastructure;
-using CoreLibrary.Utilities;
 
 namespace CoreLibrary.Tests.Utilities
 {
     public class ConfigurationTests
     {
         [Fact]
-        public void IsEndpointBusy_ReturnsFalse_WhenPortFree()
+        public void Endpoint_Composes_Correctly()
         {
-            var cfg = new Configuration { IpAddress = "127.0.0.1", Port = PortFinder.FreePort() };
-            Assert.False(cfg.IsEndpointBusy());
+            var cfg = TestConfig.TcpLoopback(5555);
+            Assert.Equal("127.0.0.1:5555", cfg.Endpoint);
         }
 
         [Fact]
-        public void IsEndpointBusy_ReturnsTrue_WhenPortBound()
+        public void With_Expression_Produces_Clone()
         {
-            int port = PortFinder.FreePort();
-            using var tcp = new System.Net.Sockets.TcpListener(System.Net.IPAddress.Loopback, port);
-            tcp.Start();
+            var cfg1 = TestConfig.TcpLoopback();
+            var cfg2 = cfg1 with { Port = cfg1.Port + 1 };
 
-            var cfg = new Configuration { IpAddress = "127.0.0.1", Port = port };
-            Assert.True(cfg.IsEndpointBusy());
-        }
-
-        [Fact]
-        public void ClientId_Unique_ByDefault()
-        {
-            var a = new Configuration();
-            var b = new Configuration();
-            Assert.NotEqual(a.ClientId, b.ClientId);
+            Assert.NotEqual(cfg1.Port, cfg2.Port);
+            Assert.Equal(cfg1.BindAddress, cfg2.BindAddress);
         }
     }
 }

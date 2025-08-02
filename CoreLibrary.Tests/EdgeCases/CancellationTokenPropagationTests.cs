@@ -16,7 +16,7 @@ namespace CoreLibrary.Tests.EdgeCases
             cancellationTokenSource.Cancel();
 
             // Accept loop runs in background; Dispose shouldn't block.
-            var disposeTask = Task.Run(() => communicator.Dispose());
+            var disposeTask = Task.Run(() => communicator.DisposeAsync());
             await disposeTask.TimeoutAfter(TimeSpan.FromMilliseconds(500));
         }
     }

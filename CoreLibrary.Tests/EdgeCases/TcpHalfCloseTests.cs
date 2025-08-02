@@ -30,14 +30,14 @@ namespace CoreLibrary.Tests.EdgeCases
 
             // dispose should not hang (listener loop must have exited)
             var tokenSource = new CancellationTokenSource(500);
-            await Task.Run(() => _server!.Dispose(), tokenSource.Token);
+            await Task.Run(() => _server!.DisposeAsync(), tokenSource.Token);
             Assert.False(tokenSource.IsCancellationRequested);
         }
 
         public Task DisposeAsync()
         {
             _rawClient?.Dispose();
-            _server?.Dispose();
+            _server?.DisposeAsync();
             return Task.CompletedTask;
         }
     }
