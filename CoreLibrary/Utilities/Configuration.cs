@@ -1,47 +1,22 @@
-﻿using System.Net;
-using System.Net.Sockets;
+﻿namespace CoreLibrary.Utilities;
 
-namespace CoreLibrary.Utilities
+public enum NodeRole { Server, Client, Monitor }
+
+/// <summary>
+/// Immutable runtime settings (JSON → ENV → CLI).
+/// </summary>
+public record Configuration
 {
-    /* -------------------- enums -------------------- */
+    public NodeRole Role { get; init; } = NodeRole.Client;
+    public string Username { get; init; } = "guest";
+    public string Password { get; init; } = "guest";
 
-    public enum NodeRole { Server, Client }          // used by new code
-    public enum TransportKind { Udp, Tcp }          //    ”     ”   ”
-    public enum AppType { Server, Client }          // legacy for AppLock
+    /// <example>"UdpCommunicator" or "TcpCommunicator"</example>
+    public string Communicator { get; init; } = "UdpCommunicator";
 
-    /* -------------------- POCO --------------------- */
+    public string BindAddress { get; init; } = "0.0.0.0";   // where we listen
+    public string TargetAddress { get; init; } = "server";    // where we connect
+    public int Port { get; init; } = 9000;
 
-    public record Configuration
-    {
-        /* networking */
-        public string BindAddress { get; init; } = "0.0.0.0";
-        public string TargetAddress { get; init; } = "127.0.0.1";  // or service name
-
-        public string IpAddress
-        {
-            get => TargetAddress; init => TargetAddress = value;
-        }
-        public int Port { get; init; } = 9000;
-        public TransportKind Transport { get; init; } = TransportKind.Udp;
-
-        /* node identity */
-        public NodeRole Role { get; init; } = NodeRole.Client;
-        public string ClientId { get; init; } = $"cli-{Guid.NewGuid():N}";
-        /* ---------- legacy aliases (AppLock, etc.) --------- */
-        public AppType AppType => Role == NodeRole.Server ? AppType.Server : AppType.Client;
-        public string AppName { get; init; } = "ReactiveChat";
-        public string Username => ClientId;
-
-        /* ----------------- helpers ------------------ */
-        public bool IsEndpointBusy()
-        {
-            try
-            {
-                using var tcpListener = new TcpListener(IPAddress.Parse(IpAddress), Port);
-                tcpListener.Start();
-                return false;   // bind succeeded → port was free
-            }
-            catch (SocketException) { return true; }
-        }
-    }
+    public string Endpoint => $"{TargetAddress}:{Port}";
 }

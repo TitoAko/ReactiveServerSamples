@@ -1,31 +1,18 @@
 services:
-  server:
-    build:
-      context: .
-      dockerfile: ServerAppSamples/Dockerfile
-    container_name: chat-server
+  chat-server:
+    build: ./ServerApp
+    environment:
+      - CHAT_ROLE=Server
+      - CHAT_USERNAME=prod-server
+      - CHAT_PASSWORD=prod-pass
+      - CHAT_PORT=9000
     ports:
-      - "9000:9000/udp"
-    command: ["dotnet", "ServerApp.dll",
-              "--bind",   "0.0.0.0",
-              "--target", "server",
-              "--port",   "9000"]
+      - "9000:9000"        # container-specific (structural)
 
-  client1:
-    build:
-      context: .
-      dockerfile: ClientAppSamples/Dockerfile
-    depends_on: [server]
-    container_name: chat-client-1
-    command: ["dotnet", "ClientApp.dll",
-              "--bind",   "0.0.0.0",
-              "--target", "server",
-              "--port",   "9000"]
-
-  client2:
-    build:
-      context: .
-      dockerfile: ClientAppSamples/Dockerfile
-    depends_on: [server]
-    container_name: chat-client-2
-    command: ["dotnet", "ClientApp.dll", "server", "9000"]
+  chat-client:
+    build: ./ClientApp
+    environment:
+      - CHAT_ROLE=Client
+      - CHAT_TARGETADDRESS=chat-server
+      - CHAT_USERNAME=prod-client
+      - CHAT_PASSWORD=prod-pass
