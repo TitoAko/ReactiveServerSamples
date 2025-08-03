@@ -11,13 +11,15 @@ namespace CoreLibrary.Communication.UdpCommunication
     {
         private readonly UdpClient _client;
         private bool _disposed;
+        private readonly Configuration _cfg;
 
         public event EventHandler<Message>? Received;
 
         public UdpReceiver(Configuration cfg)
         {
+            _cfg = cfg ?? throw new ArgumentNullException(nameof(cfg));
             _client = new UdpClient(new IPEndPoint(
-                IPAddress.Parse(cfg.BindAddress), cfg.Port));
+                IPAddress.Parse(_cfg.BindAddress), _cfg.Port));
         }
 
         public async Task ListenAsync(CancellationToken token = default)
@@ -25,8 +27,11 @@ namespace CoreLibrary.Communication.UdpCommunication
             while (!token.IsCancellationRequested)
             {
                 var result = await _client.ReceiveAsync(token);
-                var msg = JsonSerializer.Deserialize<Message>(result.Buffer)!;
-                Received?.Invoke(this, msg);
+                if (result.Buffer.Length <= _cfg.UdpMaxPayload)
+                {
+                    var msg = JsonSerializer.Deserialize<Message>(result.Buffer)!;
+                    Received?.Invoke(this, msg);
+                }
             }
         }
 

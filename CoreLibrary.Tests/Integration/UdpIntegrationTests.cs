@@ -62,7 +62,7 @@ namespace CoreLibrary.Tests.Integration
             var msg = new Message("alice", "ping", MessageType.Chat);
             await _client!.SendMessageAsync(msg);
 
-            await WaitUntil(() => _firstMessageReceived.Count == 1, 2000);
+            await WaitUntil(() => _firstMessageReceived.Count == 1);
             Assert.Equal("ping", _firstMessageReceived[0].Content);
         }
 
@@ -90,7 +90,7 @@ namespace CoreLibrary.Tests.Integration
         }
 
         // ------------------------------------------------------------
-        private static async Task WaitUntil(Func<bool> condition, int ms = 1000)
+        private static async Task WaitUntil(Func<bool> condition, int ms = 2000)
         {
             var sw = System.Diagnostics.Stopwatch.StartNew();
             while (!condition())

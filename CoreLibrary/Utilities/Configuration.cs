@@ -19,4 +19,7 @@ public record Configuration
     public int Port { get; init; } = 9000;
 
     public string Endpoint => $"{TargetAddress}:{Port}";
+
+    public const int DefaultUdpMaxPayload = 60_000;
+    public int UdpMaxPayload { get; init; } = DefaultUdpMaxPayload;
 }

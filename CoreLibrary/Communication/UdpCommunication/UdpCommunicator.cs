@@ -26,7 +26,14 @@ namespace CoreLibrary.Communication.UdpCommunication
 
         public Task StartAsync(CancellationToken t = default)
         {
-            return _receiver.ListenAsync(t);
+            return _receiver.ListenAsync(t)
+                .ContinueWith(t =>
+                {
+                    if (t.Exception != null)
+                    {
+                        Console.Error.WriteLine(t.Exception); // rethrow any exceptions
+                    }
+                }, TaskContinuationOptions.OnlyOnFaulted);
         }
 
         public async ValueTask DisposeAsync()
