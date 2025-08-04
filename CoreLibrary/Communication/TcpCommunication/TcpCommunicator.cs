@@ -1,6 +1,5 @@
 ﻿using System.Net;
 using System.Net.Sockets;
-using System.Text;
 using System.Text.Json;
 
 using CoreLibrary.Interfaces;
@@ -10,20 +9,21 @@ using CoreLibrary.Utilities;
 namespace CoreLibrary.Communication.TcpCommunication
 {
     /// <summary>
-    /// Thin façade that owns a <see cref="TcpListener"/> (server side) *and* a
-    /// <see cref="TcpSender"/> (client side).  Tests await <see cref="Started"/>
-    /// to know when the listener socket is bound.
+    /// Owns a <see cref="TcpListener"/> (server-side) and a <see cref="TcpSender"/> (client-side).
+    /// Frames are 4-byte length-prefixed.
     /// </summary>
-    public sealed class TcpCommunicator : ICommunicator
+    public sealed class TcpCommunicator : ICommunicator, IAsyncDisposable
     {
         private readonly TcpListener _listener;
         private readonly TcpSender _sender;
-        private readonly TaskCompletionSource _listenerStartedTcs =
-            new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly CancellationTokenSource _cts = new();
+        private Task? _acceptLoop;
 
+        // TaskCompletionSource to signal when the listener has started
+        private readonly TaskCompletionSource _listenerStartedTcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
         public Task Started => _listenerStartedTcs.Task;     // awaited by tests
 
-        private readonly JsonSerializerOptions _jsonSerializerOptions = new()
+        private readonly JsonSerializerOptions _jsonOpts = new()
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             Converters = { new MessageTypeConverter() }
@@ -31,78 +31,129 @@ namespace CoreLibrary.Communication.TcpCommunication
 
         public event EventHandler<Message>? MessageReceived;
 
-        public TcpCommunicator(Configuration configuration)
+        public TcpCommunicator(Configuration cfg)
         {
-            _listener = new TcpListener(IPAddress.Parse(configuration.BindAddress), configuration.Port);
-            _sender = new TcpSender(configuration);
+            _listener = new TcpListener(IPAddress.Parse(cfg.BindAddress), cfg.Port);
+            _sender = new TcpSender(cfg);
         }
 
-        #region ICommunicator
-        public async Task StartAsync(CancellationToken token = default)
+        // --------------------------------------------------------------------
+        //  ICommunicator
+        // --------------------------------------------------------------------
+        public Task StartAsync(CancellationToken token = default)
         {
-            _ = Task.Run(() => AcceptLoopAsync(token), token);
-            await Started;                                   // wait until bound
+            _acceptLoop = AcceptLoopAsync(_cts.Token);
+            return Task.CompletedTask;                  // fire-and-forget
         }
 
-        public Task SendMessageAsync(Message message, CancellationToken token = default)
+        public Task SendMessageAsync(Message msg, CancellationToken token = default)
         {
-            return _sender.SendAsync(message, token);
+            var payload = JsonSerializer.SerializeToUtf8Bytes(msg, _jsonOpts);
+            return WriteFrameAsync(_sender.Stream, payload, token);
         }
-        #endregion
-        #region Listener loop
+
+        // --------------------------------------------------------------------
+        //  Listener loop
+        // --------------------------------------------------------------------
         private async Task AcceptLoopAsync(CancellationToken token)
         {
             _listener.Start();
-            _listenerStartedTcs.TrySetResult();              // signal “ready”
 
             try
             {
                 while (!token.IsCancellationRequested)
                 {
-                    TcpClient client = await _listener.AcceptTcpClientAsync(token);
-                    _ = HandleClientAsync(client, token);    // fire-and-forget
+                    var client = await _listener.AcceptTcpClientAsync(token);
+                    _ = HandleClientAsync(client, token);      // detached
                 }
             }
             catch (OperationCanceledException) { /* normal shutdown */ }
-            catch (ObjectDisposedException) { /* listener stopped */ }
+            catch (ObjectDisposedException) { /* listener closed   */ }
         }
 
         private async Task HandleClientAsync(TcpClient client, CancellationToken token)
         {
-            using var stream = client.GetStream();
-            var buffer = new byte[4096];
+            await using var stream = client.GetStream();
 
             try
             {
                 while (!token.IsCancellationRequested)
                 {
-                    int read = await stream.ReadAsync(buffer, token);
-                    if (read == 0)
-                    {
-                        break;                   // remote closed
-                    }
+                    // 🔹 read exactly one length-prefixed frame
+                    var frame = await ReadFrameAsync(stream, token);
 
-                    string serializedMessage = Encoding.UTF8.GetString(buffer, 0, read);
-                    var message = JsonSerializer.Deserialize<Message>(serializedMessage, _jsonSerializerOptions)!;
-                    MessageReceived?.Invoke(this, message);
+                    // 🔹 turn the raw bytes back into a Message
+                    var msg = JsonSerializer.Deserialize<Message>(frame, _jsonOpts)!;
+
+                    MessageReceived?.Invoke(this, msg);
                 }
             }
-            catch (OperationCanceledException) { /* ignore */ }
+
+            catch (Exception ex) when (ex is EndOfStreamException ||
+                                                ex is OperationCanceledException ||
+                                                ex is IOException)
+            {
+                //  ignore these exceptions, they are normal connection terminations
+            }
             finally
             {
                 client.Dispose();
             }
         }
-        #endregion
-        #region Cleanup
-        public ValueTask DisposeAsync()
+
+        // --------------------------------------------------------------------
+        //  Framing helpers (4-byte little-endian length)
+        // --------------------------------------------------------------------
+        private static async Task WriteFrameAsync(Stream s, ReadOnlyMemory<byte> buf, CancellationToken t)
         {
-            // Note: TcpListener does not implement IAsyncDisposable
-            _listener.Stop(); // synchronous close
-            // TODO: consider disposing _sender if it implements IAsyncDisposable
-            _sender.Dispose();
-            return ValueTask.CompletedTask;       // satisfy the async contract
+            byte[] len = BitConverter.GetBytes(buf.Length);   // 4-byte little-endian
+
+            await s.WriteAsync(len, t).ConfigureAwait(false);
+            await s.WriteAsync(buf, t).ConfigureAwait(false);
         }
-        #endregion
+
+        private static async Task ReadExactAsync(Stream s, byte[] buf, CancellationToken t)
+        {
+            int offset = 0;
+            while (offset < buf.Length)
+            {
+                int n = await s.ReadAsync(buf.AsMemory(offset), t).ConfigureAwait(false);
+                if (n == 0)
+                {
+                    throw new EndOfStreamException();   // remote closed
+                }
+
+                offset += n;
+            }
+        }
+
+        private static async Task<byte[]> ReadFrameAsync(Stream s, CancellationToken t = default)
+        {
+            var lenBuf = new byte[4];
+            await ReadExactAsync(s, lenBuf, t);
+
+            int len = BitConverter.ToInt32(lenBuf);
+            if (len < 0 || len > 1_048_576)
+            {
+                throw new InvalidDataException($"Frame length {len} is invalid.");
+            }
+
+            var payload = new byte[len];
+            await ReadExactAsync(s, payload, t);
+            return payload;
+        }
+        // --------------------------------------------------------------------
+        //  Cleanup
+        // --------------------------------------------------------------------
+        public async ValueTask DisposeAsync()
+        {
+            _cts.Cancel();
+            if (_acceptLoop is not null)
+            {
+                await _acceptLoop;             // wait for graceful shutdown
+            }
+            _listener.Stop();
+            await _sender.DisposeAsync();
+        }
     }
 }

@@ -13,7 +13,6 @@ namespace CoreLibrary.Tests.Communication
 
             await using var communicator = new TcpCommunicator(configuration);
             await communicator.StartAsync();         // listener bound before Dispose
-            await communicator.Started;
 
             await using var client = new TcpCommunicator(configuration);
             await client.SendMessageAsync(new Message("test", "ping"));

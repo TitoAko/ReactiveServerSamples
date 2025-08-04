@@ -15,7 +15,7 @@ namespace CoreLibrary.Tests.EdgeCases
             var configuration = TestConfig.TcpLoopback(PortFinder.FreePort());
             _server = new TcpCommunicator(configuration);
             await _server.StartAsync();
-            await _server.Started;
+            //await _server.Started;
 
             // raw client socket to simulate half-close
             _rawClient = new TcpClient();

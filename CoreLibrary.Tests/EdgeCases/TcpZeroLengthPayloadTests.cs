@@ -15,7 +15,7 @@ namespace CoreLibrary.Tests.EdgeCases
             var configuration = TestConfig.TcpLoopback(PortFinder.FreePort());
             _server = new TcpCommunicator(configuration);
             await _server.StartAsync();
-            await _server.Started;
+            //await _server.Started;
             _client = new TcpCommunicator(configuration);
         }
 
@@ -24,7 +24,7 @@ namespace CoreLibrary.Tests.EdgeCases
         {
             var configuration = TestConfig.TcpLoopback(PortFinder.FreePort());
 
-            using var sender = new TcpSender(configuration);
+            var sender = new TcpSender(configuration);
 
             var emptyMessage = new Message("cli", "");
 

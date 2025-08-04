@@ -7,7 +7,7 @@ using CoreLibrary.Utilities;
 
 namespace CoreLibrary.Communication.TcpCommunication
 {
-    public sealed class TcpSender : IDisposable
+    public sealed class TcpSender : IAsyncDisposable
     {
         private bool _disposed;
         private readonly JsonSerializerOptions _jsonSerializerOptions = new()
@@ -15,9 +15,25 @@ namespace CoreLibrary.Communication.TcpCommunication
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             Converters = { new MessageTypeConverter() }
         };
+
         private readonly TcpClient _tcpClient = new();
         private readonly Configuration _configuration;
         private bool _connected;
+
+        // 🔹 NEW — expose the NetworkStream once the connection is established
+        public NetworkStream Stream
+        {
+            get
+            {
+                if (!_connected) // lazily establish the first time it’s requested
+                {
+                    _tcpClient.Connect(_configuration.TargetAddress, _configuration.Port);
+                    _connected = true;
+                }
+
+                return _tcpClient.GetStream();
+            }
+        }
 
         public TcpSender(Configuration cfg)
         {
@@ -30,27 +46,29 @@ namespace CoreLibrary.Communication.TcpCommunication
             {
                 throw new ArgumentException("Empty payload", nameof(message));
             }
-
             if (_disposed)
             {
                 throw new ObjectDisposedException(nameof(TcpSender));
             }
+            // ⬇ ensure we have a live stream (uses the property above)
+            var stream = Stream;
 
-            if (!_connected)
-            {
-                _tcpClient.Connect(_configuration.TargetAddress, _configuration.Port);
-                _connected = true;
-            }
+            string json = JsonSerializer.Serialize(message, _jsonSerializerOptions);
+            var buffer = Encoding.UTF8.GetBytes(json);
 
-            string serializedMessage = JsonSerializer.Serialize(message, _jsonSerializerOptions);
-            byte[] buffer = Encoding.UTF8.GetBytes(serializedMessage);
-            await _tcpClient.GetStream().WriteAsync(buffer, token).ConfigureAwait(false);
+            await stream.WriteAsync(buffer, token).ConfigureAwait(false);
         }
 
-        public void Dispose()
+        public async ValueTask DisposeAsync()
         {
+            if (_disposed)
+            {
+                return;
+            }
             _disposed = true;
-            _tcpClient.Dispose();
+
+            _tcpClient.Dispose();  // synchronous close is fine
+            await Task.CompletedTask;
         }
     }
 }
