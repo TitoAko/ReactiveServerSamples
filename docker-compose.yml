@@ -1,18 +1,37 @@
+version: "3.9"
+
 services:
   chat-server:
-    build: ./ServerApp
+    build:
+      context: .
+      dockerfile: ServerAppSamples/Dockerfile
     environment:
       - CHAT_ROLE=Server
       - CHAT_USERNAME=prod-server
       - CHAT_PASSWORD=prod-pass
-      - CHAT_PORT=9000
+      - CHAT_COMMUNICATOR=UdpCommunicator
+      - CHAT_BINDADDRESS=0.0.0.0
+      - CHAT_LISTENPORT=9000
+      - CHAT_TARGETADDRESS=chat-client
+      - CHAT_TARGETPORT=9001
+      - CHAT_UDPMAXPAYLOAD=60000
     ports:
-      - "9000:9000"        # container-specific (structural)
+      - "9000:9000/udp"
 
   chat-client:
-    build: ./ClientApp
+    build:
+      context: .
+      dockerfile: ClientAppSamples/Dockerfile
     environment:
+      - CHAT_NONINTERACTIVE=true
       - CHAT_ROLE=Client
-      - CHAT_TARGETADDRESS=chat-server
       - CHAT_USERNAME=prod-client
       - CHAT_PASSWORD=prod-pass
+      - CHAT_COMMUNICATOR=UdpCommunicator
+      - CHAT_BINDADDRESS=0.0.0.0
+      - CHAT_LISTENPORT=9001
+      - CHAT_TARGETADDRESS=chat-server
+      - CHAT_TARGETPORT=9000
+      - CHAT_UDPMAXPAYLOAD=60000
+    ports:
+      - "9001:9001/udp"

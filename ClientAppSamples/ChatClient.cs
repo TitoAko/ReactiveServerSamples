@@ -19,13 +19,19 @@ namespace ClientApp
             _comm.MessageReceived += (_, m) => _output.DisplayMessage(m);
         }
 
-        public async Task RunAsync()
+        public async Task RunAsync(bool nonInteractive = false)
         {
-            _ = _comm.StartAsync(_cts.Token);     // start receive loop
+            await _comm.StartAsync(_cts.Token);     // start receive loop
+
+            if (nonInteractive || Console.IsInputRedirected)
+            {
+                Console.WriteLine("Input is redirected; chat client will not be interactive.");
+                return;
+            }
 
             Console.WriteLine("Type…  ('exit' to quit)");
 
-            while (true)
+            while (!_cts.Token.IsCancellationRequested)
             {
                 bool wantExit = await _input.PumpAsync(_cts.Token);
                 if (wantExit)
@@ -44,7 +50,8 @@ namespace ClientApp
         public void Dispose()
         {
             _cts.Cancel();
-            _comm.DisposeAsync();
+            _comm.DisposeAsync().AsTask().GetAwaiter().GetResult();
+            _cts.Dispose();
         }
     }
 }

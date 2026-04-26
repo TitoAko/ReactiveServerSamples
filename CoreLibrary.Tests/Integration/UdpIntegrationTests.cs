@@ -19,41 +19,55 @@ namespace CoreLibrary.Tests.Integration
             var serverPort = PortFinder.FreePort();
             var clientPort = PortFinder.FreePort();
 
-            // Server config (listens on serverPort)
             var serverCfg = new Configuration
             {
                 Role = NodeRole.Server,
                 Communicator = "UdpCommunicator",
                 BindAddress = "127.0.0.1",
+                ListenPort = serverPort,
                 TargetAddress = "127.0.0.1",
-                Port = serverPort,
+                TargetPort = clientPort,
                 Username = "server",
                 Password = "server"
             };
 
-            // Client config (binds clientPort, targets serverPort)
-            var clientCfg = serverCfg with
+            var clientCfg = new Configuration
             {
                 Role = NodeRole.Client,
-                Port = clientPort
+                Communicator = "UdpCommunicator",
+                BindAddress = "127.0.0.1",
+                ListenPort = clientPort,
+                TargetAddress = "127.0.0.1",
+                TargetPort = serverPort,
+                Username = "client",
+                Password = "client"
             };
 
-            _server = new UdpCommunicator(serverCfg, clientPort);               // local bind clientPort, sends to serverPort
-            _client = new UdpCommunicator(clientCfg, serverPort);               // local bind serverPort, sends to clientPort
+            _server = new UdpCommunicator(serverCfg);
+            _client = new UdpCommunicator(clientCfg);
 
-            await Task.Delay(100); // Give time for the server to start, add await to remove warning cs1998
-            _ = _server.StartAsync();
-            _ = _client.StartAsync();
+            _server.MessageReceived += (_, message) => _firstMessageReceived.Add(message);
+            _client.MessageReceived += (_, message) => _secondMessageReceived.Add(message);
 
-            _server!.MessageReceived += (_, message) => _firstMessageReceived.Add(message);
-            _client!.MessageReceived += (_, message) => _secondMessageReceived.Add(message);
+            await _server.StartAsync();
+            await _client.StartAsync();
         }
 
         public async Task DisposeAsync()
         {
-            _cts.Cancel(); // Cancel any ongoing operations
-            await _server!.DisposeAsync()!;
-            await _client!.DisposeAsync()!;
+            _cts.Cancel();
+
+            if (_server is not null)
+            {
+                await _server.DisposeAsync();
+            }
+
+            if (_client is not null)
+            {
+                await _client.DisposeAsync();
+            }
+
+            _cts.Dispose();
         }
 
         [Fact]

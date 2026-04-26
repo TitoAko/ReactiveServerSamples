@@ -14,7 +14,7 @@ namespace CoreLibrary.Tests.EdgeCases
             await using var receiver = new UdpReceiver(cfg);
 
             var oversized = new byte[61000];
-            using var udp = new UdpClient(cfg.TargetAddress, cfg.Port);
+            using var udp = new UdpClient(cfg.TargetAddress, cfg.ListenPort);
             await udp.SendAsync(oversized);
 
             var received = false;

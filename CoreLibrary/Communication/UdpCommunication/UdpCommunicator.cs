@@ -12,7 +12,7 @@ namespace CoreLibrary.Communication.UdpCommunication
 
         public UdpCommunicator(Configuration cfg, int? remotePort = null)
         {
-            _sender = new UdpSender(cfg, remotePort);
+            _sender = new UdpSender(cfg);
             _receiver = new UdpReceiver(cfg);
             _receiver.Received += (_, message) => MessageReceived?.Invoke(this, message);
         }
@@ -26,14 +26,7 @@ namespace CoreLibrary.Communication.UdpCommunication
 
         public Task StartAsync(CancellationToken t = default)
         {
-            return _receiver.ListenAsync(t)
-                .ContinueWith(t =>
-                {
-                    if (t.Exception != null)
-                    {
-                        Console.Error.WriteLine(t.Exception); // rethrow any exceptions
-                    }
-                }, TaskContinuationOptions.OnlyOnFaulted);
+            return _receiver.StartAsync(t);
         }
 
         public async ValueTask DisposeAsync()

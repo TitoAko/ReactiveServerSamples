@@ -5,19 +5,24 @@ namespace CoreLibrary.Utilities
     public static class ConfigurationLoader
     {
         /// <summary>Builds <see cref="Configuration"/> from JSON → ENV → CLI.</summary>
-        public static Configuration Load(string[] args, string basePath = ".")
+        public static Configuration Load(string[] args, string? basePath = null)
         {
-            var builder = new ConfigurationBuilder()
-                .SetBasePath(basePath)
-                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-                .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") ?? "Production"}.json",
-                             optional: true, reloadOnChange: true)
-                .AddEnvironmentVariables(prefix: "CHAT_");
+            // Pick an absolute base path:
+            // - if caller passed one: normalize it
+            // - else: default to the app's base directory (bin/... at runtime)
+            var root = string.IsNullOrWhiteSpace(basePath)
+                ? AppContext.BaseDirectory
+                : (Path.IsPathRooted(basePath) ? basePath : Path.GetFullPath(basePath));
 
-            if (args is { Length: > 0 })
-            {
-                builder.AddCommandLine(args);                // works once package + using are present
-            }
+            var env = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") ?? "Production";
+
+            var builder = new ConfigurationBuilder()
+                .SetBasePath(root)
+                // Make JSON optional so missing files don't crash tools/tests
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                .AddJsonFile($"appsettings.{env}.json", optional: true, reloadOnChange: true)
+                .AddEnvironmentVariables(prefix: "CHAT_")
+                .AddCommandLine(args);
 
             return builder.Build().Get<Configuration>()!;
         }

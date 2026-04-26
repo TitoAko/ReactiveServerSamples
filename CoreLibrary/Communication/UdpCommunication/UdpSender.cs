@@ -1,6 +1,5 @@
-﻿using System.Net.Sockets;
-using System.Text;
-using System.Text.Json;
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
 
 using CoreLibrary.Messaging;
 using CoreLibrary.Utilities;
@@ -9,36 +8,74 @@ namespace CoreLibrary.Communication.UdpCommunication
 {
     public sealed class UdpSender : IAsyncDisposable
     {
-        private readonly UdpClient _client;
-        private bool _disposed;
-        private readonly Configuration _cfg;
-
-        public UdpSender(Configuration cfg, int? remotePort = null)
+        internal static readonly JsonSerializerOptions JsonOpts = new()
         {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            PropertyNameCaseInsensitive = true,
+            Converters = { new JsonStringEnumConverter() }
+        };
+
+        private readonly IUdpSocket _socket;
+        private readonly Configuration _cfg;
+        private bool _disposed;
+        private bool _connected;
+
+        public UdpSender(Configuration cfg)
+    : this(new UdpSocketAdapter(cfg.BindAddress, 0), cfg) { }
+
+        internal UdpSender(IUdpSocket socket, Configuration cfg)
+        {
+            _socket = socket ?? throw new ArgumentNullException(nameof(socket));
             _cfg = cfg ?? throw new ArgumentNullException(nameof(cfg));
-            _client = new UdpClient(_cfg.BindAddress, 0);
-            _client.Connect(cfg.TargetAddress, remotePort ?? _cfg.Port);
+        }
+
+        // Test-only ctor (seam)
+        internal UdpSender(IUdpSocket socket, Configuration cfg, int? remotePort = null)
+        {
+            _socket = socket ?? throw new ArgumentNullException(nameof(socket));
+            _cfg = cfg ?? throw new ArgumentNullException(nameof(cfg));
         }
 
         public async Task SendAsync(Message msg, CancellationToken token = default)
         {
-            var bytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(msg));
+            // Lazy connect on first send to avoid early exceptions with 0.0.0.0
+            if (!_connected)
+            {
+                var host = NormalizeRemote(_cfg.TargetAddress);
+                var port = _cfg.TargetPort;
+                _socket.Connect(host, port);
+                _connected = true;
+            }
+
+            var bytes = JsonSerializer.SerializeToUtf8Bytes(msg, JsonOpts);
             if (bytes.Length > _cfg.UdpMaxPayload)
-            {                // UDP payload limit is 60 kB, so we throw an exception if the message exceeds this size.
+            {
                 throw new ArgumentException("UDP payload limit 60 kB exceeded.", nameof(msg));
             }
 
-            await _client.SendAsync(bytes, token);
+            await _socket.SendAsync(bytes, token);
+        }
+
+        private static string NormalizeRemote(string host)
+        {
+            // Treat unspecified addresses as loopback for local dev/test
+            if (string.IsNullOrWhiteSpace(host) || host == "0.0.0.0" || host == "::" || host == "::0")
+            {
+                return "127.0.0.1";
+            }
+
+            return host;
         }
 
         public ValueTask DisposeAsync()
         {
-            if (!_disposed)
+            if (_disposed)
             {
-                _disposed = true;
-                _client.Dispose();                    // synchronous close
+                return ValueTask.CompletedTask;
             }
-            return ValueTask.CompletedTask;       // satisfy the async contract
+
+            _disposed = true;
+            return _socket.DisposeAsync();
         }
     }
 }

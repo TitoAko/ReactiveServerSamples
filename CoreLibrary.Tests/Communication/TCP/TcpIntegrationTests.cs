@@ -4,7 +4,7 @@ using CoreLibrary.Tests.TestInfrastructure;
 
 using FluentAssertions;
 
-namespace CoreLibrary.Tests.Communication
+namespace CoreLibrary.Tests.Communication.TCP
 {
     public class TcpIntegrationTests : IAsyncLifetime
     {
@@ -25,7 +25,7 @@ namespace CoreLibrary.Tests.Communication
             _client!.MessageReceived += (_, m) => _received.Add(m);   // ⬅️ capture echoes
         }
 
-        public async Task InitializeAsync()
+        public Task InitializeAsync()
         {
             _ = _server.StartAsync();
             _ = _client!.StartAsync();   // fire-and-forget, no await
@@ -33,7 +33,7 @@ namespace CoreLibrary.Tests.Communication
             _server!.MessageReceived += async (_, m) =>
                 await _server.SendMessageAsync(m);   // echo straight back
                                                      // after you create _client and start the listeners
-
+            return Task.CompletedTask;
         }
         public async Task DisposeAsync()
         {
@@ -54,7 +54,7 @@ namespace CoreLibrary.Tests.Communication
         {
             var message = new Message("cli", "hello");
             await _client!.SendMessageAsync(message);
-            await TaskTimeoutExtensions.WaitForMessageAsync<Message>(_received, 1, 1000);
+            await TaskTimeoutExtensions.WaitForMessageAsync(_received, 1, 1000);
             _received.Single().Content.Should().Be("hello");
         }
     }

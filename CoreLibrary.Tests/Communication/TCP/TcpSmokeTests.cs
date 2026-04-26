@@ -2,7 +2,7 @@
 using CoreLibrary.Messaging;
 using CoreLibrary.Tests.TestInfrastructure;
 
-namespace CoreLibrary.Tests.Communication
+namespace CoreLibrary.Tests.Communication.TCP
 {
     public class TcpSmokeTests
     {
