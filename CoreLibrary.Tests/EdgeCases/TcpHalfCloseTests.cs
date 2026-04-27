@@ -15,7 +15,7 @@ namespace CoreLibrary.Tests.EdgeCases
             var configuration = TestConfig.TcpLoopback(PortFinder.FreePort());
             _server = new TcpCommunicator(configuration);
             await _server.StartAsync();
-            //await _server.Started;
+            await _server.Started;
 
             // raw client socket to simulate half-close
             _rawClient = new TcpClient();
@@ -25,20 +25,25 @@ namespace CoreLibrary.Tests.EdgeCases
         [Fact(Timeout = 2000)]
         public async Task ReadLoop_Exits_On_RemoteClose()
         {
-            _rawClient?.Client.Shutdown(SocketShutdown.Send);   // half-close
-            await Task.Delay(100);                       // give server time to read 0 bytes
+            _rawClient?.Client.Shutdown(SocketShutdown.Send);
+            await Task.Delay(100);
 
-            // dispose should not hang (listener loop must have exited)
             var tokenSource = new CancellationTokenSource(500);
-            await Task.Run(() => _server!.DisposeAsync(), tokenSource.Token);
+
+            await Task.Run(async () => await _server!.DisposeAsync(), tokenSource.Token);
+
+            _server = null;
+
             Assert.False(tokenSource.IsCancellationRequested);
         }
 
-        public Task DisposeAsync()
+        public async Task DisposeAsync()
         {
             _rawClient?.Dispose();
-            _server?.DisposeAsync();
-            return Task.CompletedTask;
+            if (_server is not null)
+            {
+                await _server.DisposeAsync();
+            }
         }
     }
 }

@@ -8,7 +8,7 @@ namespace CoreLibrary.Tests.EdgeCases
         [Fact]
         public void OnlyOneInstancePerRoleAndPort()
         {
-            var cfg = TestConfig.TcpLoopback(12345);
+            var cfg = TestConfig.TcpLoopback(PortFinder.FreePort());
 
             using var first = new AppLock(cfg);
             Assert.False(first.IsInstanceRunning);   // we are the first instance

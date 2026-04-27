@@ -19,6 +19,8 @@ namespace CoreLibrary.Communication.TcpCommunication
         private readonly CancellationTokenSource _cts = new();
         private Task? _acceptLoop;
 
+        private bool _disposed;
+
         // TaskCompletionSource to signal when the listener has started
         private readonly TaskCompletionSource _listenerStartedTcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
         public Task Started => _listenerStartedTcs.Task;     // awaited by tests
@@ -148,6 +150,13 @@ namespace CoreLibrary.Communication.TcpCommunication
         // --------------------------------------------------------------------
         public async ValueTask DisposeAsync()
         {
+            if (_disposed)
+            {
+                return;
+            }
+
+            _disposed = true;
+
             _cts.Cancel();
             _listener.Stop();
 

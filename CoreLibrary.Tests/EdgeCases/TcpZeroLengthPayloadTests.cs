@@ -5,38 +5,18 @@ using CoreLibrary.Tests.TestInfrastructure;
 namespace CoreLibrary.Tests.EdgeCases
 {
 
-    public class TcpZeroLengthPayloadTests : IAsyncLifetime
+    public class TcpZeroLengthPayloadTests
     {
-        private TcpCommunicator? _server;
-        private TcpCommunicator? _client;
-
-        public async Task InitializeAsync()
-        {
-            var configuration = TestConfig.TcpLoopback(PortFinder.FreePort());
-            _server = new TcpCommunicator(configuration);
-            await _server.StartAsync();
-            //await _server.Started;
-            _client = new TcpCommunicator(configuration);
-        }
-
         [Fact]
-        public async Task EmptyMessage_IsRejected()
+        public async Task DisposeAsync_DoesNotHang_WhenListenerWasStarted()
         {
             var configuration = TestConfig.TcpLoopback(PortFinder.FreePort());
-
-            var sender = new TcpSender(configuration);
+            await using var sender = new TcpSender(configuration);
 
             var emptyMessage = new Message("cli", "");
 
             await Assert.ThrowsAsync<ArgumentException>(() =>
                 sender.SendAsync(emptyMessage));
-        }
-
-        public Task DisposeAsync()
-        {
-            _server?.DisposeAsync();
-            _client?.DisposeAsync();
-            return Task.CompletedTask;
         }
     }
 }
