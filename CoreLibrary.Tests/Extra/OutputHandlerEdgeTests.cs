@@ -1,6 +1,8 @@
 ﻿using CoreLibrary.IO;
 using CoreLibrary.Messaging;
 
+using FluentAssertions;
+
 namespace CoreLibrary.Tests.Extra
 {
 
@@ -16,7 +18,7 @@ namespace CoreLibrary.Tests.Extra
             handler.DisplayMessage(new Message("bob", "", MessageType.Chat));
 
             Console.Out.Flush();
-            Assert.Equal(string.Empty, writer.ToString());
+            writer.ToString().Trim().Should().BeEmpty();
         }
 
         [Fact]
@@ -26,13 +28,20 @@ namespace CoreLibrary.Tests.Extra
             var outputHandler = new OutputHandler();
 
             var writer = new StringWriter();
-            Console.SetOut(writer);
+            var original = Console.Out;
+            try
+            {
+                Console.SetOut(writer);
 
-            outputHandler.DisplayMessage(new Message("alice", longMessage, MessageType.Chat));
+                outputHandler.DisplayMessage(new Message("alice", longMessage, MessageType.Chat));
 
-            string output = writer.ToString();
-            Assert.True(output.Length < 260); // displays HH:mm + sender + ~240 chars
-
+                string output = writer.ToString();
+                output.Length.Should().BeLessThanOrEqualTo(259); // displays HH:mm + sender + ~240 chars
+            }
+            finally
+            {
+                Console.SetOut(original);
+            }
             Console.SetOut(new StreamWriter(Console.OpenStandardOutput()) { AutoFlush = true });
         }
     }

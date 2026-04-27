@@ -3,15 +3,23 @@ using CoreLibrary.Messaging;
 
 namespace CoreLibrary.Tests.TestInfrastructure
 {
-    /// <summary> Test double that throws <see cref="ObjectDisposedException"/>
-    /// after Dispose and records all sent messages. </summary>
+    /// <summary>
+    /// Test double that records sent messages and throws after disposal.
+    /// </summary>
     public sealed class FakeCommunicator : ICommunicator
     {
         private bool _disposed;
-        public readonly List<Message> Sent = new();
+
+        public bool DisposeWasCalled { get; private set; }
+        public bool StartWasCalled { get; private set; }
+
+        public List<Message> SentMessages { get; } = new();
+
+        public event EventHandler<Message>? MessageReceived;
 
         public Task StartAsync(CancellationToken token = default)
         {
+            StartWasCalled = true;
             return Task.CompletedTask;
         }
 
@@ -21,13 +29,10 @@ namespace CoreLibrary.Tests.TestInfrastructure
             {
                 throw new ObjectDisposedException(nameof(FakeCommunicator));
             }
-            Sent.Add(m);
+
+            SentMessages.Add(m);
             return Task.CompletedTask;
         }
-
-#pragma warning disable CS0067
-        public event EventHandler<Message>? MessageReceived;
-#pragma warning disable
 
         public ValueTask DisposeAsync()
         {
@@ -35,9 +40,11 @@ namespace CoreLibrary.Tests.TestInfrastructure
             {
                 return ValueTask.CompletedTask;
             }
-            // Note: this is a fake communicator, so we don't need to clean up resources.
+
             _disposed = true;
-            return DisposeAsync(); // satisfy the async contract
+            DisposeWasCalled = true;
+
+            return ValueTask.CompletedTask;
         }
     }
 }
