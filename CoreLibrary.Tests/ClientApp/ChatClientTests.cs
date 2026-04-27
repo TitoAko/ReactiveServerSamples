@@ -30,7 +30,7 @@ public class ChatClientTests
         var originalIn = Console.In;
         try
         {
-            Console.SetIn(new StringReader("exit"));
+            Console.SetIn(new StringReader("exit" + Environment.NewLine));
 
             await client.RunAsync(nonInteractive: false);
         }

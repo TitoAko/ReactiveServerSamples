@@ -25,7 +25,7 @@ namespace ClientApp
         {
             await _comm.StartAsync(_cts.Token);     // start receive loop
 
-            if (nonInteractive || Console.IsInputRedirected)
+            if (nonInteractive)
             {
                 Console.WriteLine("Input is redirected; chat client will not be interactive.");
                 return;
