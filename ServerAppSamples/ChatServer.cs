@@ -1,4 +1,5 @@
 ﻿using CoreLibrary.Factories;
+using CoreLibrary.Interfaces;
 using CoreLibrary.Messaging;
 using CoreLibrary.Utilities;
 
@@ -16,17 +17,21 @@ namespace ServerApp
         public void AddClient(Configuration configuration)
         {
             var communicator = CommunicatorFactory.Create(configuration);
+            AddClient(communicator);
+        }
+
+        internal void AddClient(ICommunicator communicator)
+        {
             var clientConnection = new ClientConnection(communicator);
 
             _users.Add(clientConnection);
-            clientConnection.Received += OnMessageAsync;   // event handler changed
+            clientConnection.Received += OnMessageAsync;
 
-            // 🟢 fire-and-forget so *this* call returns immediately
             _ = clientConnection.StartAsync().ContinueWith(t =>
             {
                 if (t.Exception is not null)
                 {
-                    Console.Error.WriteLine(t.Exception);   // TODO: proper logging
+                    Console.Error.WriteLine(t.Exception);
                 }
             });
         }

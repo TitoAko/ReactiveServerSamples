@@ -42,8 +42,8 @@ namespace CoreLibrary.Communication.TcpCommunication
         // --------------------------------------------------------------------
         public Task StartAsync(CancellationToken token = default)
         {
-            _acceptLoop = AcceptLoopAsync(_cts.Token);
-            return Task.CompletedTask;                  // fire-and-forget
+            _acceptLoop ??= AcceptLoopAsync(_cts.Token);
+            return Task.CompletedTask;
         }
 
         public Task SendMessageAsync(Message msg, CancellationToken token = default)
@@ -58,6 +58,7 @@ namespace CoreLibrary.Communication.TcpCommunication
         private async Task AcceptLoopAsync(CancellationToken token)
         {
             _listener.Start();
+            _listenerStartedTcs.TrySetResult();
 
             try
             {
@@ -148,12 +149,22 @@ namespace CoreLibrary.Communication.TcpCommunication
         public async ValueTask DisposeAsync()
         {
             _cts.Cancel();
+            _listener.Stop();
+
             if (_acceptLoop is not null)
             {
-                await _acceptLoop;             // wait for graceful shutdown
+                try
+                {
+                    await _acceptLoop.ConfigureAwait(false);
+                }
+                catch (ObjectDisposedException)
+                {
+                    // normal during shutdown
+                }
             }
-            _listener.Stop();
-            await _sender.DisposeAsync();
+
+            await _sender.DisposeAsync().ConfigureAwait(false);
+            _cts.Dispose();
         }
     }
 }

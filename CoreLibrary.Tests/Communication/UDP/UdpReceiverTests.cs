@@ -13,7 +13,7 @@ namespace CoreLibrary.Tests.Communication.UDP
         [Fact(Timeout = 2000)]
         public async Task Receiver_Raises_On_ValidPayload()
         {
-            var cfg = new Configuration { BindAddress = "127.0.0.1", Port = 9000, UdpMaxPayload = 60_000 };
+            var cfg = new Configuration { BindAddress = "127.0.0.1", ListenPort = 9000, UdpMaxPayload = 60_000 };
             var fake = new FakeUdp();
             var recv = new UdpReceiver(fake, cfg);
 
@@ -40,7 +40,7 @@ namespace CoreLibrary.Tests.Communication.UDP
         [Fact(Timeout = 2000)]
         public async Task Receiver_Drops_Oversize()
         {
-            var cfg = new Configuration { BindAddress = "127.0.0.1", Port = 9001, UdpMaxPayload = 60_000 };
+            var cfg = new Configuration { BindAddress = "127.0.0.1", ListenPort = 9001, UdpMaxPayload = 60_000 };
             var fake = new FakeUdp();
             var recv = new UdpReceiver(fake, cfg);
 
@@ -61,7 +61,7 @@ namespace CoreLibrary.Tests.Communication.UDP
         [Fact(Timeout = 2000)]
         public async Task Receiver_Stops_On_Cancellation()
         {
-            var cfg = new Configuration { BindAddress = "127.0.0.1", Port = 9002, UdpMaxPayload = 60_000 };
+            var cfg = new Configuration { BindAddress = "127.0.0.1", ListenPort = 9002, UdpMaxPayload = 60_000 };
             var fake = new FakeUdp();
             var recv = new UdpReceiver(fake, cfg);
 

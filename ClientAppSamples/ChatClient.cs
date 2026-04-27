@@ -11,6 +11,8 @@ namespace ClientApp
         private readonly OutputHandler _output = new();
         private readonly CancellationTokenSource _cts = new();
 
+        private bool _disposed;
+
         public ChatClient(ICommunicator comm, string clientId)
         {
             _comm = comm;
@@ -49,6 +51,13 @@ namespace ClientApp
 
         public void Dispose()
         {
+            if (_disposed)
+            {
+                return;
+            }
+
+            _disposed = true;
+
             _cts.Cancel();
             _comm.DisposeAsync().AsTask().GetAwaiter().GetResult();
             _cts.Dispose();

@@ -1,5 +1,4 @@
 ﻿using System.Text.Json;
-using System.Text.Json.Serialization;
 
 using CoreLibrary.Communication.UdpCommunication;
 using CoreLibrary.Messaging;
@@ -13,13 +12,6 @@ namespace CoreLibrary.Tests.Communication.UDP
     {
         private static int MaxContentLen(Configuration cfg, string user = "cli")
         {
-            var jsonOptions = new JsonSerializerOptions
-            {
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                PropertyNameCaseInsensitive = true,
-                Converters = { new JsonStringEnumConverter() }
-            };
-
             int lo = 0, hi = cfg.UdpMaxPayload, best = 0;
 
             while (lo <= hi)
