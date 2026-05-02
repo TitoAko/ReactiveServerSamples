@@ -17,8 +17,8 @@ namespace CoreLibrary.Tests.Messaging
         {
             var original = new Message("alice", "hi there", MessageType.Chat);
 
-            string jsonSerializer = JsonSerializer.Serialize(original, _jsonSerializerOptions);
-            var backAgain = JsonSerializer.Deserialize<Message>(jsonSerializer, _jsonSerializerOptions)!;
+            string json = JsonSerializer.Serialize(original, _jsonSerializerOptions);
+            var backAgain = JsonSerializer.Deserialize<Message>(json, _jsonSerializerOptions)!;
 
             Assert.Equal(original.Content, backAgain.Content);
             Assert.Equal(original.Sender, backAgain.Sender);

@@ -8,7 +8,7 @@ public sealed class AppLock : IDisposable
 
     public AppLock(Configuration cfg)
     {
-        var name = $"Chat-{cfg.Role}-{cfg.Port}";
+        var name = $"Chat-{cfg.Role}-{cfg.ListenPort}";
         _mutex = new Mutex(initiallyOwned: true, name, out _createdNew);
     }
 

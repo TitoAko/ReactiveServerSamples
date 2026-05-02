@@ -1,7 +1,7 @@
 ﻿using ClientApp;
 
-using CoreLibrary.Interfaces;
 using CoreLibrary.Messaging;
+using CoreLibrary.Tests.TestInfrastructure;
 
 using FluentAssertions;
 
@@ -41,32 +41,5 @@ public class ChatClientTests
 
         fake.StartWasCalled.Should().BeTrue();
         fake.SentMessages.Should().ContainSingle(m => m.Type == MessageType.Exit);
-    }
-
-    private sealed class FakeCommunicator : ICommunicator
-    {
-        public bool StartWasCalled { get; private set; }
-        public bool DisposeWasCalled { get; private set; }
-        public List<Message> SentMessages { get; } = new();
-
-        public event EventHandler<Message>? MessageReceived;
-
-        public Task StartAsync(CancellationToken cancellationToken = default)
-        {
-            StartWasCalled = true;
-            return Task.CompletedTask;
-        }
-
-        public Task SendMessageAsync(Message message, CancellationToken cancellationToken = default)
-        {
-            SentMessages.Add(message);
-            return Task.CompletedTask;
-        }
-
-        public ValueTask DisposeAsync()
-        {
-            DisposeWasCalled = true;
-            return ValueTask.CompletedTask;
-        }
     }
 }

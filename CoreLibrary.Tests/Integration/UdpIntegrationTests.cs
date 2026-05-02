@@ -49,8 +49,8 @@ namespace CoreLibrary.Tests.Integration
             _server.MessageReceived += (_, message) => _firstMessageReceived.Add(message);
             _client.MessageReceived += (_, message) => _secondMessageReceived.Add(message);
 
-            await _server.StartAsync();
-            await _client.StartAsync();
+            await _server.StartAsync(_cts.Token);
+            await _client.StartAsync(_cts.Token);
         }
 
         public async Task DisposeAsync()
@@ -70,7 +70,7 @@ namespace CoreLibrary.Tests.Integration
             _cts.Dispose();
         }
 
-        [Fact]
+        [Fact(Timeout = 3000)]
         public async Task SendAndReceive_SingleChatMessage()
         {
             var msg = new Message("alice", "ping", MessageType.Chat);
@@ -80,7 +80,7 @@ namespace CoreLibrary.Tests.Integration
             Assert.Equal("ping", _firstMessageReceived[0].Content);
         }
 
-        [Fact]
+        [Fact(Timeout = 3000)]
         public async Task SendAndReceive_ExitMessage()
         {
             var message = new Message("bob", "<bye>", MessageType.Exit);
@@ -90,7 +90,7 @@ namespace CoreLibrary.Tests.Integration
             Assert.Equal(MessageType.Exit, _firstMessageReceived.Last().Type);
         }
 
-        [Fact]
+        [Fact(Timeout = 3000)]
         public async Task Messages_Preserve_Order()
         {
             for (int i = 0; i < 5; i++)

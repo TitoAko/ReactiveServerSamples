@@ -20,7 +20,7 @@ namespace CoreLibrary.Communication.TcpCommunication
 
         public TcpReceiver(Configuration configuration)
         {
-            _listener = new TcpListener(IPAddress.Parse(configuration.BindAddress), configuration.Port);
+            _listener = new TcpListener(IPAddress.Parse(configuration.BindAddress), configuration.ListenPort);
         }
 
         public async Task ListenAsync(CancellationToken token = default)

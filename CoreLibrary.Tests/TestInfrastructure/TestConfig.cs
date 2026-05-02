@@ -13,7 +13,6 @@ namespace CoreLibrary.Tests.TestInfrastructure
                 Communicator = "UdpCommunicator",
                 BindAddress = "127.0.0.1",
                 TargetAddress = "127.0.0.1",
-                Port = resolvedListenPort,
                 ListenPort = resolvedListenPort,
                 TargetPort = targetPort ?? resolvedListenPort,
                 Username = "test",
@@ -23,13 +22,16 @@ namespace CoreLibrary.Tests.TestInfrastructure
 
         public static Configuration TcpLoopback(int? port = null)
         {
+            int resolvedPort = port ?? PortFinder.FreePort();
+
             return new()
             {
                 Role = NodeRole.Client,
                 Communicator = "TcpCommunicator",
                 BindAddress = "127.0.0.1",
                 TargetAddress = "127.0.0.1",
-                Port = port ?? PortFinder.FreePort(),
+                ListenPort = resolvedPort,
+                TargetPort = resolvedPort,
                 Username = "test",
                 Password = "test"
             };

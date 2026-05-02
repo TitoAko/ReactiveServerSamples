@@ -4,7 +4,7 @@ using CoreLibrary.Messaging;
 namespace CoreLibrary.Tests.TestInfrastructure
 {
     /// <summary>
-    /// Test double that records sent messages and throws after disposal.
+    /// Test double that records sent messages, tracks lifecycle, and can raise inbound messages.
     /// </summary>
     public sealed class FakeCommunicator : ICommunicator
     {
@@ -32,6 +32,11 @@ namespace CoreLibrary.Tests.TestInfrastructure
 
             SentMessages.Add(m);
             return Task.CompletedTask;
+        }
+
+        public void RaiseMessageReceived(Message message)
+        {
+            MessageReceived?.Invoke(this, message);
         }
 
         public ValueTask DisposeAsync()

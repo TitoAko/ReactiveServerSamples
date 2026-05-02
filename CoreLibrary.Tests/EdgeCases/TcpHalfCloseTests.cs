@@ -19,7 +19,7 @@ namespace CoreLibrary.Tests.EdgeCases
 
             // raw client socket to simulate half-close
             _rawClient = new TcpClient();
-            _rawClient.Connect("127.0.0.1", configuration.Port);
+            _rawClient.Connect("127.0.0.1", configuration.ListenPort);
         }
 
         [Fact(Timeout = 2000)]

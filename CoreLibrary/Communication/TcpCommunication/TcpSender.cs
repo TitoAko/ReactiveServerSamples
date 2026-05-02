@@ -27,7 +27,7 @@ namespace CoreLibrary.Communication.TcpCommunication
             {
                 if (!_connected) // lazily establish the first time it’s requested
                 {
-                    _tcpClient.Connect(_configuration.TargetAddress, _configuration.Port);
+                    _tcpClient.Connect(_configuration.TargetAddress, _configuration.ListenPort);
                     _connected = true;
                 }
 

@@ -35,7 +35,7 @@ namespace CoreLibrary.Communication.TcpCommunication
 
         public TcpCommunicator(Configuration cfg)
         {
-            _listener = new TcpListener(IPAddress.Parse(cfg.BindAddress), cfg.Port);
+            _listener = new TcpListener(IPAddress.Parse(cfg.BindAddress), cfg.ListenPort);
             _sender = new TcpSender(cfg);
         }
 

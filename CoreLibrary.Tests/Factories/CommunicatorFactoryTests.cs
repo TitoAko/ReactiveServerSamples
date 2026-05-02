@@ -19,5 +19,26 @@ namespace CoreLibrary.Tests.Factories
 
             Assert.IsType(expectedConcrete, instance);
         }
+
+        [Fact]
+        public void Factory_Throws_On_Unknown_Communicator()
+        {
+            var cfg = TestConfig.UdpLoopback() with { Communicator = "Unknown" };
+
+            Assert.Throws<ArgumentException>(() =>
+                CommunicatorFactory.Create(cfg));
+        }
+
+        [Theory]
+        [InlineData("udpcommunicator", typeof(UdpCommunicator))]
+        [InlineData("TCPCommunicator", typeof(TcpCommunicator))]
+        public void Factory_Is_Case_Insensitive(string communicator, Type expectedConcrete)
+        {
+            var cfg = TestConfig.UdpLoopback() with { Communicator = communicator };
+
+            var instance = CommunicatorFactory.Create(cfg);
+
+            Assert.IsType(expectedConcrete, instance);
+        }
     }
 }
