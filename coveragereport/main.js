@@ -213,7 +213,7 @@ var assemblies = [
   {
     "name": "ClientApp",
     "classes": [
-      { "name": "ClientApp.ChatClient", "rp": "ClientApp_ChatClient.html", "cl": 20, "ucl": 23, "cal": 43, "tl": 56, "cb": 2, "tb": 12, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "ClientApp.ChatClient", "rp": "ClientApp_ChatClient.html", "cl": 44, "ucl": 8, "cal": 52, "tl": 65, "cb": 10, "tb": 22, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "ClientApp.ClientAppInitializer", "rp": "ClientApp_ClientAppInitializer.html", "cl": 0, "ucl": 23, "cal": 23, "tl": 47, "cb": 0, "tb": 2, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "ClientApp.ClientAppInitializer", "rp": "ClientApp_ClientAppInitializer.html", "cl": 0, "ucl": 18, "cal": 18, "tl": 30, "cb": 0, "tb": 2, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "Program", "rp": "ClientApp_Program.html", "cl": 0, "ucl": 2, "cal": 2, "tl": 5, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
@@ -221,15 +221,15 @@ var assemblies = [
   {
     "name": "CoreLibrary",
     "classes": [
-      { "name": "CoreLibrary.Communication.TcpCommunication.FramedStream", "rp": "CoreLibrary_FramedStream.html", "cl": 0, "ucl": 20, "cal": 20, "tl": 30, "cb": 0, "tb": 8, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "CoreLibrary.Communication.TcpCommunication.TcpCommunicator", "rp": "CoreLibrary_TcpCommunicator.html", "cl": 107, "ucl": 4, "cal": 111, "tl": 158, "cb": 23, "tb": 26, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "CoreLibrary.Communication.TcpCommunication.FramedStream", "rp": "CoreLibrary_FramedStream.html", "cl": 16, "ucl": 4, "cal": 20, "tl": 30, "cb": 4, "tb": 8, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "CoreLibrary.Communication.TcpCommunication.TcpCommunicator", "rp": "CoreLibrary_TcpCommunicator.html", "cl": 144, "ucl": 6, "cal": 150, "tl": 178, "cb": 52, "tb": 66, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "CoreLibrary.Communication.TcpCommunication.TcpReceiver", "rp": "CoreLibrary_TcpReceiver.html", "cl": 30, "ucl": 12, "cal": 42, "tl": 60, "cb": 7, "tb": 16, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "CoreLibrary.Communication.TcpCommunication.TcpSender", "rp": "CoreLibrary_TcpSender.html", "cl": 47, "ucl": 6, "cal": 53, "tl": 73, "cb": 13, "tb": 18, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "CoreLibrary.Communication.UdpCommunication.UdpCommunicator", "rp": "CoreLibrary_UdpCommunicator.html", "cl": 33, "ucl": 1, "cal": 34, "tl": 50, "cb": 11, "tb": 16, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "CoreLibrary.Communication.UdpCommunication.UdpReceiver", "rp": "CoreLibrary_UdpReceiver.html", "cl": 74, "ucl": 2, "cal": 76, "tl": 94, "cb": 32, "tb": 40, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "CoreLibrary.Communication.UdpCommunication.UdpSender", "rp": "CoreLibrary_UdpSender.html", "cl": 68, "ucl": 3, "cal": 71, "tl": 90, "cb": 30, "tb": 48, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "CoreLibrary.Communication.UdpCommunication.UdpSocketAdapter", "rp": "CoreLibrary_UdpSocketAdapter.html", "cl": 24, "ucl": 5, "cal": 29, "tl": 50, "cb": 11, "tb": 20, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "CoreLibrary.Factories.CommunicatorFactory", "rp": "CoreLibrary_CommunicatorFactory.html", "cl": 12, "ucl": 0, "cal": 12, "tl": 23, "cb": 9, "tb": 12, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "CoreLibrary.Factories.CommunicatorFactory", "rp": "CoreLibrary_CommunicatorFactory.html", "cl": 12, "ucl": 0, "cal": 12, "tl": 23, "cb": 10, "tb": 12, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "CoreLibrary.Handlers.ClientHandler", "rp": "CoreLibrary_ClientHandler.html", "cl": 0, "ucl": 9, "cal": 9, "tl": 53, "cb": 0, "tb": 6, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "CoreLibrary.IO.InputHandler", "rp": "CoreLibrary_InputHandler.html", "cl": 11, "ucl": 5, "cal": 16, "tl": 30, "cb": 2, "tb": 4, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "CoreLibrary.IO.OutputHandler", "rp": "CoreLibrary_OutputHandler.html", "cl": 22, "ucl": 0, "cal": 22, "tl": 32, "cb": 22, "tb": 22, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
@@ -238,7 +238,7 @@ var assemblies = [
       { "name": "CoreLibrary.Messaging.TextMessage", "rp": "CoreLibrary_TextMessage.html", "cl": 0, "ucl": 6, "cal": 6, "tl": 17, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "CoreLibrary.Utilities.AppLock", "rp": "CoreLibrary_AppLock.html", "cl": 29, "ucl": 6, "cal": 35, "tl": 61, "cb": 7, "tb": 8, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "CoreLibrary.Utilities.Cli", "rp": "CoreLibrary_Cli.html", "cl": 0, "ucl": 17, "cal": 17, "tl": 28, "cb": 0, "tb": 14, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "CoreLibrary.Utilities.Configuration", "rp": "CoreLibrary_Configuration.html", "cl": 31, "ucl": 0, "cal": 31, "tl": 47, "cb": 2, "tb": 4, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "CoreLibrary.Utilities.Configuration", "rp": "CoreLibrary_Configuration.html", "cl": 32, "ucl": 0, "cal": 32, "tl": 47, "cb": 2, "tb": 4, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "CoreLibrary.Utilities.ConfigurationLoader", "rp": "CoreLibrary_ConfigurationLoader.html", "cl": 14, "ucl": 4, "cal": 18, "tl": 30, "cb": 3, "tb": 10, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "CoreLibrary.Utilities.Login", "rp": "CoreLibrary_Login.html", "cl": 0, "ucl": 17, "cal": 17, "tl": 32, "cb": 0, "tb": 4, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "CoreLibrary.Utilities.UserAuthenticator", "rp": "CoreLibrary_UserAuthenticator.html", "cl": 0, "ucl": 1, "cal": 1, "tl": 13, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
@@ -248,10 +248,10 @@ var assemblies = [
     "classes": [
       { "name": "Program", "rp": "ServerApp_Program.html", "cl": 0, "ucl": 2, "cal": 2, "tl": 4, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "Program", "rp": "ServerApp_Program.html", "cl": 0, "ucl": 2, "cal": 2, "tl": 5, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "ServerApp.ChatServer", "rp": "ServerApp_ChatServer.html", "cl": 11, "ucl": 30, "cal": 41, "tl": 61, "cb": 1, "tb": 10, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "ServerApp.Models.ClientConnection", "rp": "ServerApp_ClientConnection.html", "cl": 11, "ucl": 23, "cal": 34, "tl": 52, "cb": 3, "tb": 14, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "ServerApp.ChatServer", "rp": "ServerApp_ChatServer.html", "cl": 31, "ucl": 19, "cal": 50, "tl": 66, "cb": 5, "tb": 14, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "ServerApp.Models.ClientConnection", "rp": "ServerApp_ClientConnection.html", "cl": 24, "ucl": 10, "cal": 34, "tl": 52, "cb": 5, "tb": 14, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "ServerApp.ServerAppInitializer", "rp": "ServerApp_ServerAppInitializer.html", "cl": 0, "ucl": 38, "cal": 38, "tl": 47, "cb": 0, "tb": 4, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "ServerApp.UserManager", "rp": "ServerApp_UserManager.html", "cl": 8, "ucl": 17, "cal": 25, "tl": 40, "cb": 0, "tb": 4, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "ServerApp.UserManager", "rp": "ServerApp_UserManager.html", "cl": 22, "ucl": 3, "cal": 25, "tl": 40, "cb": 2, "tb": 4, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
     ]},
 ];
 
